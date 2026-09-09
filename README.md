@@ -1,16 +1,16 @@
-# HomeSync — Cooperative-owned Digital Service Marketplace
+# SevaSetu — Cooperative-owned Digital Service Marketplace
 
 Built for **SIH 2026, Problem Statement 89**: *Cooperative-owned Digital Service
 Marketplace for Labour Cooperative Federations and Labour Cooperative Societies.*
 
-HomeSync connects verified skilled workers (electricians, plumbers, carpenters,
+SevaSetu connects verified skilled workers (electricians, plumbers, carpenters,
 painters, domestic help, caregivers, drivers, gardeners, technicians and more)
 with customers, through a marketplace owned and governed by the labour
 cooperative — not a private gig platform.
 
-## What changed from the original HomeSync
+## What changed from the original prototype
 
-The original HomeSync was a household-inventory / consumption-tracking app
+The original prototype was a household-inventory / consumption-tracking app
 built on Firebase Auth + Firestore. That domain doesn't map onto a labour
 marketplace, and Firebase was tightly coupled to it, so this version:
 
@@ -52,12 +52,12 @@ command required (`netlify.toml` is already configured with
 
 | Role     | Email                     | Password  |
 |----------|---------------------------|-----------|
-| Customer | customer@homesync.demo    | demo1234  |
-| Worker   | worker1@homesync.demo     | demo1234  |
-| Admin    | admin@homesync.demo       | demo1234  |
+| Customer | customer@sevasetu.demo    | demo1234  |
+| Worker   | worker1@sevasetu.demo     | demo1234  |
+| Admin    | admin@sevasetu.demo       | demo1234  |
 
-(17 more demo workers exist across every category — `worker2@homesync.demo`
-through `worker18@homesync.demo`, same password — created automatically the
+(17 more demo workers exist across every category — `worker2@sevasetu.demo`
+through `worker18@sevasetu.demo`, same password — created automatically the
 first time the app loads, in `seedDemoData()` inside `js/store.js`.)
 
 To wipe the demo data and reseed, open the browser console on any page and
@@ -128,7 +128,7 @@ Workforce Allocation → Manage Disputes.
 
 ## Dynamic, category-aware architecture (added on top of the marketplace)
 
-HomeSync no longer shows the same generic page for every service. One
+SevaSetu no longer shows the same generic page for every service. One
 reusable page, `category.html`, renders a completely different-feeling
 experience per category — theme, hero copy, 3D hero shape, services,
 FAQs, testimonials, features and booking questions — all driven by a
@@ -144,7 +144,7 @@ single config file.
   replacement for a real "categories" Firestore/Postgres collection later).
 - `js/theme.js` — `applyCategoryTheme(theme)` sets CSS custom properties
   (`--cat-primary`, `--cat-accent`, `--cat-gradient`, …) on `:root`, which
-  every themed element (hero, buttons, badges, cards) reads from. HomeSync's
+  every themed element (hero, buttons, badges, cards) reads from. SevaSetu's
   base brand colors stay as the fallback, so every category still looks
   like the same product underneath its accent.
 - `js/scene3d.js` — a small, lazily-loaded three.js scene behind each

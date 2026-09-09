@@ -1,5 +1,5 @@
 // ============================================================
-//  js/ui.js — shared header/nav + small helpers
+//  js/ui.js — shared header/nav + small helpers (SevaSetu)
 // ============================================================
 import { currentUser, logout, getNotifications, seedDemoData } from "./store.js";
 import "./animate.js";
@@ -38,7 +38,7 @@ export function renderHeader(mountSelector = "#hs-header") {
     <header class="hs-header">
       <div class="hs-header-inner">
         <a class="hs-logo" href="index.html">
-          <span class="hs-logo-mark">🤝</span> HomeSync <span class="hs-logo-tag">Cooperative</span>
+          <span class="hs-logo-mark">🤝</span> SevaSetu <span class="hs-logo-tag">Cooperative</span>
         </a>
         <nav class="hs-nav">
           ${links.map(([href, key]) => {
@@ -106,4 +106,10 @@ export function qs(name) {
   return new URLSearchParams(location.search).get(name);
 }
 
-document.addEventListener("DOMContentLoaded", () => renderHeader());
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => renderHeader());
+} else {
+  renderHeader();
+}
+window.addEventListener("pageshow", () => renderHeader());
+

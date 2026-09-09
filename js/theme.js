@@ -3,7 +3,7 @@
 //  Sets CSS custom properties on :root so every themed element
 //  (hero, buttons, badges, cards, section headings) reads from
 //  the same source. Brand base (--coop-teal etc. in
-//  marketplace.css) stays as the fallback, so HomeSync still
+//  marketplace.css) stays as the fallback, so SevaSetu still
 //  feels like one product underneath each category's accent.
 // ============================================================
 

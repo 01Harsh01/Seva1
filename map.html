@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Map — HomeSync</title>
+<title>Map — SevaSetu</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="marketplace.css" />
@@ -20,14 +20,14 @@
   </div>
   <div id="map"></div>
 </div>
-<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+<div class="footer"><div class="container">SevaSetu — Cooperative-owned Digital Service Marketplace</div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="module">
 import "./js/ui.js";
 import { CATEGORIES, findMatches } from "./js/store.js";
 import { getCategoryConfig } from "./js/categoryConfig.js";
-import { applyCategoryTheme, resetCategoryTheme } from "./js/theme.js";
+import { applyCategoryTheme } from "./js/theme.js";
 import { money, stars, qs } from "./js/ui.js";
 
 const catSel = document.getElementById("m-category");
@@ -35,7 +35,6 @@ catSel.innerHTML += CATEGORIES.map(c => `<option value="${c.id}">${c.icon} ${c.l
 if (qs("category")) catSel.value = qs("category");
 if (qs("category")) applyCategoryTheme(getCategoryConfig(qs("category")).theme);
 catSel.addEventListener("change", () => applyCategoryTheme(catSel.value ? getCategoryConfig(catSel.value).theme : null));
-window.addEventListener("beforeunload", resetCategoryTheme);
 
 const map = L.map("map").setView([26.1445, 91.7362], 12);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {

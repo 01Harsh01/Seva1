@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Service Category — HomeSync</title>
+<title>Service Category — SevaSetu</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="marketplace.css" />
@@ -82,13 +82,13 @@
   </div>
 </section>
 
-<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+<div class="footer"><div class="container">SevaSetu — Cooperative-owned Digital Service Marketplace</div></div>
 
 <script type="module">
 import "./js/ui.js";
 import { CATEGORIES, findMatches, demandForecast } from "./js/store.js";
 import { getCategoryConfig, getActiveCategoryConfigs } from "./js/categoryConfig.js";
-import { applyCategoryTheme, resetCategoryTheme } from "./js/theme.js";
+import { applyCategoryTheme } from "./js/theme.js";
 import { mountCategoryScene } from "./js/scene3d.js";
 import { mascotBadgeHTML } from "./js/mascot.js";
 import { money, stars, verificationBadge, qs } from "./js/ui.js";
@@ -127,7 +127,7 @@ async function loadCategory(id) {
   // 1. Theme + hero copy (update together, no stale flash)
   applyCategoryTheme(cfg.theme);
   document.getElementById("cat-icon").innerHTML = mascotBadgeHTML({ icon: cfg.icon, color: "rgba(255,255,255,0.22)", size: 84 });
-  document.title = `${cfg.label} Services — HomeSync`;
+  document.title = `${cfg.label} Services — SevaSetu`;
   document.getElementById("cat-title").textContent = `${cfg.label} Services`;
   document.getElementById("cat-tagline").textContent = cfg.tagline;
   document.getElementById("cat-desc").textContent = cfg.description;
@@ -138,13 +138,6 @@ async function loadCategory(id) {
   document.getElementById("cat-map-link").href = `map.html?category=${cfg.id}`;
   document.getElementById("services-title").textContent = `${cfg.label} Services`;
   document.getElementById("workers-title").textContent = `Verified ${cfg.label} Workers`;
-  document.getElementById("features-title").textContent = `Why choose HomeSync for ${cfg.label}`;
-
-  // 2. Subtle hero backdrop themed to this category
-  mountCategoryScene({ container: document.getElementById("cat-hero-canvas"), color: cfg.theme.accent });
-
-  // 3. Switcher
-  renderSwitcher(id);
 
   // 4. Stats
   const allWorkersInCat = findMatches({ category: id, verifiedOnly: true });

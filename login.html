@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Log in — HomeSync</title>
+<title>Log in — SevaSetu</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="marketplace.css" />
@@ -13,7 +13,7 @@
 
 <div class="container section">
   <div class="card auth-card">
-    <h2 style="margin-bottom:18px;font-weight:800;color:var(--coop-teal-dark)">Log in to HomeSync</h2>
+    <h2 style="margin-bottom:18px;font-weight:800;color:var(--coop-teal-dark)">Log in to SevaSetu</h2>
     
     <div class="auth-tabs" id="role-tabs">
       <button class="active" data-role="customer">Customer</button>
@@ -24,7 +24,7 @@
     <form id="login-form">
       <div class="form-group">
         <label>Email</label>
-        <input class="form-control" type="email" id="email" value="customer@homesync.demo" required />
+        <input class="form-control" type="email" id="email" value="customer@sevasetu.demo" required />
       </div>
       <div class="form-group">
         <label>Password</label>
@@ -49,7 +49,7 @@
   </div>
 </div>
 
-<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+<div class="footer"><div class="container">SevaSetu — Cooperative-owned Digital Service Marketplace</div></div>
 
 <script type="module">
 import "./js/ui.js";
@@ -59,9 +59,9 @@ const redirectUrl = qs("redirect");
 
 let role = "customer";
 const creds = {
-  customer: { email: "customer@homesync.demo", pass: "demo1234" },
-  worker: { email: "worker1@homesync.demo", pass: "demo1234" },
-  admin: { email: "admin@homesync.demo", pass: "demo1234" },
+  customer: { email: "customer@sevasetu.demo", pass: "demo1234" },
+  worker: { email: "worker1@sevasetu.demo", pass: "demo1234" },
+  admin: { email: "admin@sevasetu.demo", pass: "demo1234" },
 };
 
 function selectRole(r) {
@@ -75,9 +75,9 @@ document.querySelectorAll("#role-tabs button").forEach(btn => {
   btn.addEventListener("click", () => selectRole(btn.dataset.role));
 });
 
-document.getElementById("quick-cust")?.addEventListener("click", () => doLogin("customer@homesync.demo", "demo1234", "customer"));
-document.getElementById("quick-work")?.addEventListener("click", () => doLogin("worker1@homesync.demo", "demo1234", "worker"));
-document.getElementById("quick-adm")?.addEventListener("click", () => doLogin("admin@homesync.demo", "demo1234", "admin"));
+document.getElementById("quick-cust")?.addEventListener("click", () => doLogin("customer@sevasetu.demo", "demo1234", "customer"));
+document.getElementById("quick-work")?.addEventListener("click", () => doLogin("worker1@sevasetu.demo", "demo1234", "worker"));
+document.getElementById("quick-adm")?.addEventListener("click", () => doLogin("admin@sevasetu.demo", "demo1234", "admin"));
 
 function doLogin(email, password, r) {
   const res = login(email, password, r);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Book a Service — HomeSync</title>
+<title>Book a Service — SevaSetu</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="marketplace.css" />
@@ -38,13 +38,13 @@
     <button class="btn cat-btn-primary btn-block" type="submit">Confirm Booking</button>
   </form>
 </div>
-<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+<div class="footer"><div class="container">SevaSetu — Cooperative-owned Digital Service Marketplace</div></div>
 
 <script type="module">
 import "./js/ui.js";
 import { getWorkerById, getWorkers, createBooking, currentUser, login } from "./js/store.js";
 import { getCategoryConfig } from "./js/categoryConfig.js";
-import { applyCategoryTheme, resetCategoryTheme } from "./js/theme.js";
+import { applyCategoryTheme } from "./js/theme.js";
 import { money, verificationBadge, qs } from "./js/ui.js";
 
 const verifiedWorkers = getWorkers().filter(w => w.verificationStatus === "verified");
@@ -106,7 +106,7 @@ document.getElementById("booking-form").addEventListener("submit", (e) => {
 
   let user = currentUser();
   if (!user) {
-    const res = login("customer@homesync.demo", "demo1234", "customer");
+    const res = login("customer@sevasetu.demo", "demo1234", "customer");
     if (res.success) user = res.user;
   }
 
@@ -129,10 +129,8 @@ document.getElementById("booking-form").addEventListener("submit", (e) => {
     serviceCharge: worker.expectedRate,
     isEmergency,
   });
-  resetCategoryTheme();
   location.href = `payment.html?booking=${booking.id}`;
 });
-window.addEventListener("beforeunload", resetCategoryTheme);
 </script>
 </body>
 </html>

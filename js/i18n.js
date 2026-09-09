@@ -19,7 +19,7 @@ export const TRANSLATIONS = {
     btn_join_worker: "Join as a Worker",
     btn_emergency: "Emergency Service",
     btn_book_now: "Book Now",
-    why_title: "Why HomeSync?",
+    why_title: "Why SevaSetu?",
     login: "Log in", logout: "Log out", register: "Register",
   },
   hi: {
@@ -35,7 +35,7 @@ export const TRANSLATIONS = {
     btn_join_worker: "श्रमिक के रूप में जुड़ें",
     btn_emergency: "आपातकालीन सेवा",
     btn_book_now: "सेवा बुक करें",
-    why_title: "HomeSync क्यों?",
+    why_title: "SevaSetu क्यों?",
     login: "लॉग इन करें", logout: "लॉग आउट", register: "पंजीकरण करें",
   },
   as: {
@@ -51,7 +51,7 @@ export const TRANSLATIONS = {
     btn_join_worker: "শ্ৰমিক হিচাপে যোগদান কৰক",
     btn_emergency: "জৰুৰীকালীন সেৱা",
     btn_book_now: "সেৱা বুক কৰক",
-    why_title: "কিয় HomeSync?",
+    why_title: "কিয় SevaSetu?",
     login: "লগইন কৰক", logout: "লগআউট", register: "পঞ্জীয়ন কৰক",
   },
 };

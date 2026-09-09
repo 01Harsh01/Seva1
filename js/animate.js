@@ -1,20 +1,9 @@
 // ============================================================
 //  js/animate.js — universal scroll-reveal + count-up layer
 //
-//  Imported once from js/ui.js, which every page already loads,
-//  so animation is automatic everywhere rather than hand-added
-//  per page. It:
-//   1. Fades/slides cards, hero text, table rows, FAQ items, etc.
-//      into view as they scroll on screen, with a light stagger.
-//   2. Counts stat numbers up from 0 when they scroll into view
-//      (any element with [data-countup]).
-//   3. Fades the whole page in on load.
-//   4. Re-scans on DOM mutations, since most content on this app
-//      is injected via innerHTML after data loads (worker grids,
-//      dashboard tabs, bookings...) — a one-shot IntersectionObserver
-//      set up before that content exists would miss it entirely.
-//   5. Does nothing but instantly show content if the visitor has
-//      prefers-reduced-motion set.
+//  Imported once from js/ui.js, which every page already loads.
+//  Includes bfcache (Back/Forward navigation) restoration support
+//  so pages NEVER stay blank when navigating back.
 // ============================================================
 
 const REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -34,7 +23,7 @@ function getObserver() {
         io.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+  }, { threshold: 0.1, rootMargin: "0px 0px -20px 0px" });
   return io;
 }
 
@@ -47,7 +36,7 @@ function primeCountUp(el) {
   const target = parseFloat(numStr.replace(/,/g, ""));
   if (Number.isNaN(target)) return;
   el.dataset.countupDone = "1";
-  if (REDUCED) return; // leave the real value as-is
+  if (REDUCED) return;
   el.textContent = prefix + "0" + suffix;
   const obs = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -65,21 +54,21 @@ function primeCountUp(el) {
       }
       requestAnimationFrame(frame);
     });
-  }, { threshold: 0.4 });
+  }, { threshold: 0.2 });
   obs.observe(el);
 }
 
 let staggerCounter = 0;
-function scan(root = document) {
+export function scan(root = document) {
   if (REDUCED) {
     root.querySelectorAll(REVEAL_SELECTORS).forEach((el) => el.classList.add("reveal", "in-view"));
     root.querySelectorAll(".stat-value[data-countup], [data-countup]").forEach((el) => el.dataset.countupDone = "1");
     return;
   }
   root.querySelectorAll(REVEAL_SELECTORS).forEach((el) => {
-    if (el.classList.contains("reveal")) return;
-    el.classList.add("reveal");
-    el.style.transitionDelay = `${(staggerCounter++ % 8) * 55}ms`;
+    if (el.classList.contains("in-view")) return;
+    el.classList.add("reveal", "in-view");
+    el.style.transitionDelay = `${(staggerCounter++ % 6) * 40}ms`;
     getObserver().observe(el);
   });
   root.querySelectorAll(".stat-value, [data-countup]").forEach(primeCountUp);
@@ -87,55 +76,44 @@ function scan(root = document) {
 
 function watchMutations() {
   let pending = false;
-  const mo = new MutationObserver((mutations) => {
-    // Debounced: count-up animations mutate text nodes every frame,
-    // which would otherwise trigger a full document re-scan on every
-    // frame. A short debounce still catches genuinely new content
-    // (worker grids, dashboard tab renders) without that cost.
+  const mo = new MutationObserver(() => {
     if (pending) return;
     pending = true;
-    setTimeout(() => { pending = false; scan(document); }, 120);
+    setTimeout(() => { pending = false; scan(document); }, 100);
   });
-  mo.observe(document.body, { childList: true, subtree: true });
+  if (document.body) {
+    mo.observe(document.body, { childList: true, subtree: true });
+  }
 }
 
-function fadeInPage() {
-  if (REDUCED) return;
-  document.documentElement.classList.add("hs-page-enter");
-  requestAnimationFrame(() => {
-    document.documentElement.classList.add("hs-page-enter-active");
-  });
-}
-
-// Cross-page transition: since this is a real multi-page app (not
-// an SPA), navigating between pages is otherwise a hard cut. This
-// intercepts same-tab internal link clicks, fades the page out,
-// then navigates — so moving from marketplace → worker profile →
-// booking feels like one continuous cinematic flow instead of a
-// flash of white between page loads.
-function wirePageExitTransition() {
-  if (REDUCED) return;
-  document.addEventListener("click", (e) => {
-    const link = e.target.closest("a[href]");
-    if (!link) return;
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    if (link.target && link.target !== "_self") return;
-    const href = link.getAttribute("href");
-    if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("javascript:")) return;
-    let url;
-    try { url = new URL(href, location.href); } catch { return; }
-    if (url.origin !== location.origin) return;
-    if (url.pathname === location.pathname && url.hash) return; // in-page anchor, let smooth-scroll handle it
-
-    e.preventDefault();
-    document.documentElement.classList.add("hs-page-exit");
-    setTimeout(() => { location.href = url.href; }, 180);
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  fadeInPage();
-  wirePageExitTransition();
+function restorePageVisibility() {
+  document.documentElement.classList.remove("hs-page-exit");
+  document.documentElement.classList.remove("hs-page-enter");
+  document.documentElement.classList.add("hs-page-enter-active");
+  if (document.body) {
+    document.body.style.opacity = "1";
+    document.body.style.visibility = "visible";
+  }
   scan(document);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    restorePageVisibility();
+    watchMutations();
+  });
+} else {
+  restorePageVisibility();
   watchMutations();
+}
+
+// Ensure pageshow event (fired when navigating back/forward from bfcache) always restores full visibility
+window.addEventListener("pageshow", (e) => {
+  restorePageVisibility();
 });
+
+// Remove any potential lingering exit class
+window.addEventListener("popstate", () => {
+  restorePageVisibility();
+});
+

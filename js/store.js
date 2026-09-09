@@ -1,12 +1,10 @@
 // ============================================================
 //  js/store.js
-//  HomeSync Cooperative Marketplace — local data layer.
+//  SevaSetu Cooperative Marketplace — local data layer.
 //
 //  No backend/Firebase is wired up. All data lives in the
 //  browser's localStorage so the app is fully demoable and
-//  deployable as a static site. Every function here is written
-//  so a real backend (Node/Express + Postgres/Firestore) can be
-//  swapped in later behind the same function names.
+//  deployable as a static site.
 // ============================================================
 
 const KEYS = {
@@ -20,7 +18,7 @@ const KEYS = {
   DISPUTES: "hs_disputes",
   NOTIFICATIONS: "hs_notifications",
   SESSION: "hs_session",
-  SEEDED: "hs_seeded_v1",
+  SEEDED: "hs_seeded_v2",
 };
 
 function read(key, fallback) {
@@ -69,7 +67,7 @@ export function getCategory(id) {
 }
 
 // ---------------------------------------------------------------
-// Session / auth (local, role based — no Firebase)
+// Session / auth (local, role based)
 // ---------------------------------------------------------------
 export function getSession() {
   return read(KEYS.SESSION, null);
@@ -83,7 +81,8 @@ export function logout() {
 
 export function findUserByEmail(email) {
   const users = read(KEYS.USERS, []);
-  return users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const normalized = email.toLowerCase().replace("@homesync.demo", "@sevasetu.demo");
+  return users.find((u) => u.email.toLowerCase() === email.toLowerCase() || u.email.toLowerCase() === normalized);
 }
 
 export function registerCustomer({ name, email, password, phone }) {
@@ -123,8 +122,8 @@ export function registerWorker(profile) {
     availability: "available",
     expectedRate: Number(profile.expectedRate) || getCategory(profile.category)?.rateMin || 300,
     emergencyContact: profile.emergencyContact || "",
-    cooperativeMemberId: `NITA-COOP-${Math.floor(1000 + Math.random() * 9000)}`,
-    verificationStatus: "pending", // pending | under_review | verified | rejected
+    cooperativeMemberId: `SEVA-COOP-${Math.floor(1000 + Math.random() * 9000)}`,
+    verificationStatus: "pending",
     photo: profile.photo || "",
     rating: 0,
     ratingCount: 0,
@@ -338,11 +337,11 @@ export function generateInvoice(bookingId) {
 
   const invoice = {
     id: uid("inv"),
-    invoiceNumber: `HS/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 89999)}`,
+    invoiceNumber: `SS/${new Date().getFullYear()}/${Math.floor(10000 + Math.random() * 89999)}`,
     bookingId,
     customerName: booking.customerName,
     workerName: worker?.name,
-    cooperative: "NIT Agartala Labour Cooperative Society",
+    cooperative: "SevaSetu Labour Cooperative Society",
     category: booking.category,
     date: booking.date,
     labourCharge,
@@ -389,8 +388,7 @@ export function addReview({ bookingId, workerId, overall, quality, professionali
 }
 
 // ---------------------------------------------------------------
-// Notifications (in-app, local — Firebase Cloud Messaging can be
-// swapped in later; the call sites won't need to change)
+// Notifications
 // ---------------------------------------------------------------
 export function notify(toUserId, message, toCustomerIdFallback) {
   const list = read(KEYS.NOTIFICATIONS, []);
@@ -434,10 +432,7 @@ export function resolveDispute(id, resolution) {
 }
 
 // ---------------------------------------------------------------
-// AI-assisted demand forecasting (statistical, not a trained ML
-// model — this is explicit in the UI). Uses historical booking
-// counts per category with a simple recency-weighted trend, so
-// the architecture is ready to be swapped for a real model.
+// AI-assisted demand forecasting
 // ---------------------------------------------------------------
 export function demandForecast() {
   const bookings = getBookings();
@@ -455,8 +450,6 @@ export function demandForecast() {
   }).sort((a, b) => b.recentBookings - a.recentBookings);
 }
 
-// AI-assisted workforce allocation recommendations (heuristic,
-// clearly labelled as recommendations, not autonomous actions).
 export function workforceAllocation() {
   const forecast = demandForecast();
   const workers = getWorkers().filter((w) => w.verificationStatus === "verified");
@@ -516,11 +509,11 @@ export function seedDemoData(force = false) {
     const userId = uid("wuser");
     const rating = Math.round((3.5 + Math.random() * 1.5) * 10) / 10;
     const verification = i < 14 ? "verified" : i < 16 ? "under_review" : "pending";
-    users.push({ id: userId, role: "worker", name, email: `worker${i + 1}@homesync.demo`, password: "demo1234", phone: `9${Math.floor(100000000 + Math.random() * 899999999)}`, createdAt: Date.now() });
+    users.push({ id: userId, role: "worker", name, email: `worker${i + 1}@sevasetu.demo`, password: "demo1234", phone: `9${Math.floor(100000000 + Math.random() * 899999999)}`, createdAt: Date.now() });
     workers.push({
       id: uid("wkr"), userId, name,
       phone: `9${Math.floor(100000000 + Math.random() * 899999999)}`,
-      email: `worker${i + 1}@homesync.demo`,
+      email: `worker${i + 1}@sevasetu.demo`,
       address: `${["Fancy Bazar", "Ganeshguri", "Dispur", "Beltola", "Zoo Road", "Six Mile", "Chandmari", "Paltan Bazar"][i % 8]}, Guwahati`,
       lat: BASE.lat + (Math.random() - 0.5) * 0.15,
       lng: BASE.lng + (Math.random() - 0.5) * 0.15,
@@ -534,7 +527,7 @@ export function seedDemoData(force = false) {
       availability: i % 5 === 0 ? "busy" : "available",
       expectedRate: cat.rateMin + Math.floor(Math.random() * (cat.rateMax - cat.rateMin)),
       emergencyContact: "112",
-      cooperativeMemberId: `NITA-COOP-${1000 + i}`,
+      cooperativeMemberId: `SEVA-COOP-${1000 + i}`,
       verificationStatus: verification,
       photo: "",
       rating: verification === "verified" ? rating : 0,
@@ -550,10 +543,10 @@ export function seedDemoData(force = false) {
   });
 
   const custUsers = [
-    { id: uid("cust"), role: "customer", name: "Demo Customer", email: "customer@homesync.demo", password: "demo1234", phone: "9800000001", createdAt: Date.now() },
+    { id: uid("cust"), role: "customer", name: "Demo Customer", email: "customer@sevasetu.demo", password: "demo1234", phone: "9800000001", createdAt: Date.now() },
   ];
   const adminUsers = [
-    { id: uid("adm"), role: "admin", name: "Cooperative Admin", email: "admin@homesync.demo", password: "demo1234", phone: "9800000002", createdAt: Date.now() },
+    { id: uid("adm"), role: "admin", name: "Cooperative Admin", email: "admin@sevasetu.demo", password: "demo1234", phone: "9800000002", createdAt: Date.now() },
   ];
 
   write(KEYS.USERS, [...users, ...custUsers, ...adminUsers]);

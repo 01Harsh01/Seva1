@@ -1,4 +1,4 @@
-# netlify.toml — Netlify deployment configuration for HomeSync
+# netlify.toml — Netlify deployment configuration for SevaSetu
 # Static site — no build step, no server-side secrets required.
 # (A real Razorpay integration would add a serverless function under
 #  netlify/functions/ and set RAZORPAY_KEY_SECRET as a Netlify env var —

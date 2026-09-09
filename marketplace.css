@@ -1,5 +1,7 @@
 /* ============================================================
-   HomeSync Cooperative Marketplace — layered on styles.css theme
+   SevaSetu Cooperative Marketplace — layered on styles.css theme
+   Adds semantic color variables, category theming, card components,
+   trust badges, invoice layouts, and micro-animations.
    ============================================================ */
 :root {
   --coop-teal: #0F766E;
@@ -367,14 +369,8 @@ table.hs-table td { padding: 10px; border-bottom: 1px solid var(--border); verti
    (see @media block at the very end, which turns all of this off).
    ============================================================ */
 
-/* Whole-page fade-in on load */
-html.hs-page-enter body { opacity: 0; }
-html.hs-page-enter-active body { opacity: 1; transition: opacity 0.45s ease; }
-
-/* Whole-page fade-out just before navigating to another page —
-   makes multi-page navigation feel like one continuous flow
-   instead of a hard cut. */
-html.hs-page-exit body { opacity: 0; transform: scale(0.99); transition: opacity 0.18s ease, transform 0.18s ease; }
+/* Whole-page smooth display */
+body { opacity: 1; }
 
 /* Scroll-reveal (applied by js/animate.js to cards, table rows, etc.) */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s cubic-bezier(.2,.7,.3,1), transform 0.55s cubic-bezier(.2,.7,.3,1); will-change: opacity, transform; }

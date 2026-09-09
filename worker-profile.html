@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Worker Profile — HomeSync</title>
+<title>Worker Profile — SevaSetu</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="marketplace.css" />
@@ -11,13 +11,13 @@
 <body>
 <div id="hs-header"></div>
 <div class="container section" id="content" style="max-width:820px"></div>
-<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+<div class="footer"><div class="container">SevaSetu — Cooperative-owned Digital Service Marketplace</div></div>
 
 <script type="module">
 import "./js/ui.js";
 import { getWorkerById, getWorkers, getCategory, getReviews } from "./js/store.js";
 import { getCategoryConfig } from "./js/categoryConfig.js";
-import { applyCategoryTheme, resetCategoryTheme } from "./js/theme.js";
+import { applyCategoryTheme } from "./js/theme.js";
 import { money, stars, verificationBadge, qs } from "./js/ui.js";
 
 const verifiedWorkers = getWorkers().filter(w => w.verificationStatus === "verified");
@@ -33,7 +33,6 @@ if (!worker) {
 } else {
   const cat = getCategory(worker.category);
   applyCategoryTheme(getCategoryConfig(worker.category).theme);
-  window.addEventListener("beforeunload", resetCategoryTheme);
   const reviews = getReviews().filter(r => r.workerId === worker.id).sort((a,b) => b.createdAt - a.createdAt);
   content.innerHTML = `
     <div class="card" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">

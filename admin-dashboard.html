@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cooperative Admin — HomeSync</title>
+<title>Cooperative Admin — SevaSetu</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="marketplace.css" />
@@ -36,7 +36,7 @@
   <div class="tab-panel" id="tab-disputes"></div>
   <div class="tab-panel" id="tab-categories"></div>
 </div>
-<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+<div class="footer"><div class="container">SevaSetu — Cooperative-owned Digital Service Marketplace</div></div>
 
 <script type="module">
 import "./js/ui.js";
@@ -50,7 +50,7 @@ import { money, badge, verificationBadge, stars } from "./js/ui.js";
 
 let user = currentUser();
 if (!user || user.role !== "admin") {
-  const res = login("admin@homesync.demo", "demo1234", "admin");
+  const res = login("admin@sevasetu.demo", "demo1234", "admin");
   if (res.success) user = res.user;
 }
 
