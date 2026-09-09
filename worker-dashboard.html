@@ -162,7 +162,7 @@ function renderSkills() {
       <h3 style="margin-bottom:10px">Your skills — ${cat?.label}</h3>
       <div class="chip-select" id="skill-chips">${cat.skills.map(s => `<span class="chip ${worker.skills.includes(s) ? "selected" : ""}" data-skill="${s}">${s}</span>`).join("")}</div>
       <h3 style="margin:18px 0 8px">Certifications on file</h3>
-      <p style="color:var(--muted);font-size:0.9rem">${worker.certifications.join(", ") || "None uploaded yet"}</p>
+      <p style="color:var(--muted);font-size:0.9rem">${(worker.certifications || []).join(", ") || "None uploaded yet"}</p>
       <div class="form-group" style="margin-top:12px"><label>Add a certification</label>
         <div style="display:flex;gap:8px"><input class="form-control" id="new-cert" placeholder="e.g. Advanced Wiring Certificate" /><button class="btn btn-ghost" id="add-cert">Add</button></div>
       </div>
@@ -188,9 +188,9 @@ function renderWelfare() {
   const el = document.getElementById("tab-welfare");
   el.innerHTML = `
     <div class="grid grid-2">
-      <div class="card"><h3 style="margin-bottom:8px">Insurance status</h3>${badge(worker.welfare.insurance, worker.welfare.insurance === "covered" ? "success" : "warn")}</div>
-      <div class="card"><h3 style="margin-bottom:8px">Welfare scheme</h3>${badge(worker.welfare.scheme, worker.welfare.scheme === "enrolled" ? "success" : "warn")}</div>
-      <div class="card"><h3 style="margin-bottom:8px">Training completed</h3><p style="font-size:0.9rem;color:var(--muted)">${worker.welfare.training.join(", ") || "None yet"}</p></div>
+      <div class="card"><h3 style="margin-bottom:8px">Insurance status</h3>${badge(worker.welfare?.insurance || "pending", worker.welfare?.insurance === "covered" ? "success" : "warn")}</div>
+      <div class="card"><h3 style="margin-bottom:8px">Welfare scheme</h3>${badge(worker.welfare?.scheme || "pending", worker.welfare?.scheme === "enrolled" ? "success" : "warn")}</div>
+      <div class="card"><h3 style="margin-bottom:8px">Training completed</h3><p style="font-size:0.9rem;color:var(--muted)">${(worker.welfare?.training || []).join(", ") || "None yet"}</p></div>
       <div class="card"><h3 style="margin-bottom:8px">Emergency support</h3><p style="font-size:0.9rem;color:var(--muted)">Cooperative helpline: 1800-XXX-XXXX (placeholder — configure with your cooperative's real number)</p></div>
     </div>`;
 }

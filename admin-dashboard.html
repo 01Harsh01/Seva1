@@ -104,7 +104,7 @@ function renderVerification() {
       <div class="card">
         <div style="display:flex;justify-content:space-between"><b>${w.name}</b>${verificationBadge(w.verificationStatus)}</div>
         <p style="color:var(--muted);font-size:0.85rem">${getCategory(w.category)?.label} · ${w.experience} yrs · ${w.qualification || "—"}</p>
-        <p style="font-size:0.85rem;margin-top:6px"><b>Certifications:</b> ${w.certifications.join(", ") || "None"}</p>
+        <p style="font-size:0.85rem;margin-top:6px"><b>Certifications:</b> ${(w.certifications || []).join(", ") || "None"}</p>
         <p style="font-size:0.85rem"><b>Cooperative ID:</b> ${w.cooperativeMemberId}</p>
         <div style="display:flex;gap:8px;margin-top:10px">
           <button class="btn btn-primary btn-sm" data-id="${w.id}" data-status="under_review">Mark Under Review</button>
@@ -135,7 +135,7 @@ function renderPayments() {
 
 function renderWelfare() {
   const workers = getWorkers();
-  const covered = workers.filter(w => w.welfare.insurance === "covered").length;
+  const covered = workers.filter(w => w.welfare?.insurance === "covered").length;
   const coveragePct = workers.length ? Math.round((covered / workers.length) * 100) : 0;
   const el = document.getElementById("tab-welfare");
   el.innerHTML = `
@@ -143,18 +143,18 @@ function renderWelfare() {
       <div class="card stat-card"><div class="stat-value">${workers.length}</div><div class="stat-label">Workers covered by cooperative</div></div>
       <div class="card stat-card"><div class="stat-value">${covered}</div><div class="stat-label">Insurance covered</div></div>
       <div class="card stat-card"><div class="stat-value">${workers.length - covered}</div><div class="stat-label">Pending coverage</div></div>
-      <div class="card stat-card"><div class="stat-value">${workers.filter(w=>w.welfare.scheme==="enrolled").length}</div><div class="stat-label">Enrolled in welfare scheme</div></div>
+      <div class="card stat-card"><div class="stat-value">${workers.filter(w=>w.welfare?.scheme==="enrolled").length}</div><div class="stat-label">Enrolled in welfare scheme</div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:2px"><b>Overall insurance coverage</b><span>${coveragePct}%</span></div>
       <div class="hs-bar-track" style="--bar-pct:${coveragePct}%"><div class="hs-bar-fill" style="background:var(--success)"></div></div>
     </div>
     <table class="hs-table"><thead><tr><th>Worker</th><th>Insurance</th><th>Scheme</th><th>Action</th></tr></thead>
-    <tbody>${workers.map(w => `<tr><td>${w.name}</td><td>${badge(w.welfare.insurance, w.welfare.insurance==="covered"?"success":"warn")}</td><td>${badge(w.welfare.scheme, w.welfare.scheme==="enrolled"?"success":"warn")}</td>
-      <td><button class="btn btn-ghost btn-sm" data-cover="${w.id}">${w.welfare.insurance === "covered" ? "Mark Pending" : "Mark Covered"}</button></td></tr>`).join("")}</tbody></table>`;
+    <tbody>${workers.map(w => `<tr><td>${w.name}</td><td>${badge(w.welfare?.insurance||"pending", w.welfare?.insurance==="covered"?"success":"warn")}</td><td>${badge(w.welfare?.scheme||"pending", w.welfare?.scheme==="enrolled"?"success":"warn")}</td>
+      <td><button class="btn btn-ghost btn-sm" data-cover="${w.id}">${w.welfare?.insurance === "covered" ? "Mark Pending" : "Mark Covered"}</button></td></tr>`).join("")}</tbody></table>`;
   el.querySelectorAll("[data-cover]").forEach(btn => btn.addEventListener("click", () => {
     const w = workers.find(x => x.id === btn.dataset.cover);
-    updateWelfare(w.id, { insurance: w.welfare.insurance === "covered" ? "pending" : "covered" });
+    updateWelfare(w.id, { insurance: w.welfare?.insurance === "covered" ? "pending" : "covered" });
     renderAll();
   }));
 }
