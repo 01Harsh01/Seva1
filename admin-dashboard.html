@@ -62,6 +62,9 @@
   max-height: 90vh;
   overflow-y: auto;
 }
+.modal-content.modal-cert {
+  max-width: 660px;
+}
 .toast-notice {
   position: fixed;
   bottom: 24px;
@@ -81,6 +84,116 @@
 @keyframes slide-up {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* Certificate Document Styling */
+.certificate-doc {
+  background: #fffefb;
+  border: 8px solid #d97706;
+  outline: 2px solid #b45309;
+  outline-offset: -5px;
+  border-radius: 14px;
+  padding: 24px 20px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+  margin-bottom: 20px;
+  color: #1e293b;
+  overflow: hidden;
+}
+.certificate-doc::before {
+  content: "SEVASETU VERIFIED";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: rgba(217, 119, 6, 0.05);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.cert-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.cert-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 6px 0 2px;
+  font-family: Georgia, serif;
+}
+.cert-recipient {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #065f46;
+  border-bottom: 2px solid #d97706;
+  display: inline-block;
+  padding: 2px 24px;
+  margin: 10px 0;
+}
+.cert-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  margin: 14px 0;
+  font-size: 0.8rem;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px dashed rgba(217, 119, 6, 0.3);
+}
+.cert-signatures {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px dashed #cbd5e1;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+.cert-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--surface2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--text);
+}
+.cert-pill:hover {
+  background: var(--surface3);
+  border-color: var(--coop-teal);
+  color: var(--coop-teal-dark);
+}
+.audit-checkpoint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.84rem;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  border: 1px solid #e2e8f0;
 }
 </style>
 </head>
@@ -174,11 +287,11 @@ function showToast(msg, icon = "✓") {
 }
 
 // Modal functions
-function openModal(html) {
+function openModal(html, extraClass = "") {
   const container = document.getElementById("modal-container");
   container.innerHTML = `
     <div class="modal-overlay" id="modal-backdrop">
-      <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-content ${extraClass}" onclick="event.stopPropagation()">
         ${html}
       </div>
     </div>`;
@@ -187,6 +300,196 @@ function openModal(html) {
 function closeModal() {
   const container = document.getElementById("modal-container");
   if (container) container.innerHTML = "";
+}
+
+function getWorkerDemoCertificates(w) {
+  const cat = getCategory(w.category);
+  const catLabel = cat?.label || "General Trades";
+  const wIdSuffix = (w.id || "0000").slice(-4).toUpperCase();
+
+  const certMap = {
+    cleaning: {
+      title: "National Vocational Trade Certificate in Professional Cleaning & Sanitation",
+      certNumber: `NSDC-AS-2024-CLN-${wIdSuffix}`,
+      issuingBody: "Assam Skill Development Mission (ASDM)",
+      issueDate: "15 Jan 2024",
+      validity: "Permanent Recognition",
+      grade: "Grade A+ (Distinction - 94%)",
+      skills: ["Industrial Deep Sanitization", "Eco-Friendly Chemical Handling", "Heavy Surface Scrubbing"],
+      govtId: `Aadhaar: **** **** ${wIdSuffix} (DigiLocker Verified)`,
+      policeCheck: "Clean Record — Verified by Assam Police Citizen Portal",
+      practicalScore: "94 / 100",
+      hours: "360 Hours Hands-on Apprentice Training"
+    },
+    domestic: {
+      title: "State Cooperative Certificate in Household Management & Domestic Care",
+      certNumber: `AS-COOP-2023-DOM-${wIdSuffix}`,
+      issuingBody: "Directorate of Craftsmen Training, Assam",
+      issueDate: "20 Nov 2023",
+      validity: "Permanent Recognition",
+      grade: "Grade A (89%)",
+      skills: ["Domestic Health & Hygiene", "Elder & Child Home Safety", "Appliance Maintenance"],
+      govtId: `Voter ID: AS/01/291/${wIdSuffix} (Verified)`,
+      policeCheck: "Clean Record — Kamrup Metro Police Verification Cleared",
+      practicalScore: "91 / 100",
+      hours: "300 Hours Domestic Apprentice Program"
+    },
+    caregiving: {
+      title: "National Healthcare Certificate in Geriatric Patient & Elderly Care",
+      certNumber: `NSDC-HC-2024-CAR-${wIdSuffix}`,
+      issuingBody: "Healthcare Sector Skill Council & ASDM",
+      issueDate: "05 Feb 2024",
+      validity: "Permanent Recognition",
+      grade: "Grade A+ (Distinction - 96%)",
+      skills: ["Vitals Monitoring & First Aid", "Elderly Mobility Assistance", "Post-Surgical Care Protocols"],
+      govtId: `Aadhaar: **** **** ${wIdSuffix} (DigiLocker Verified)`,
+      policeCheck: "Clean Record — Assam Police Special Branch Cleared",
+      practicalScore: "96 / 100",
+      hours: "480 Hours Clinical & Home Healthcare Training"
+    },
+    driving: {
+      title: "Commercial Heavy & Light Transport Driver Competency Certificate",
+      certNumber: `DTO-AS-01-2019-DRV-${wIdSuffix}`,
+      issuingBody: "District Transport Office, Kamrup Metro (Guwahati)",
+      issueDate: "18 Aug 2019 (Valid till Aug 2029)",
+      validity: "Valid License",
+      grade: "Commercial Transport Endorsed",
+      skills: ["Defensive Driving Protocols", "GPS Route Navigation", "Accident Emergency Protocol"],
+      govtId: `Driving License: AS-012019${wIdSuffix} (Verified)`,
+      policeCheck: "Clean Record — Zero Traffic Violations / Clean Criminal Record",
+      practicalScore: "98 / 100",
+      hours: "Govt. Approved Motor Driving School Certified"
+    },
+    electrical: {
+      title: "Licensed Electrical Wireman & Trade Competency Certificate (NSQF Level 4)",
+      certNumber: `EIC-AS-2023-ELC-${wIdSuffix}`,
+      issuingBody: "Chief Electrical Inspectorate, Govt. of Assam",
+      issueDate: "12 Oct 2023",
+      validity: "Permanent Supervisor License",
+      grade: "Class-A Supervisor Wireman License",
+      skills: ["Concealed & Conduit Wiring", "Earthing & Surge Protection", "Distribution MCB Systems"],
+      govtId: `Aadhaar: **** **** ${wIdSuffix} (DigiLocker Authenticated)`,
+      policeCheck: "Clean Record — Kamrup Metro Police Verification Cleared",
+      practicalScore: "95 / 100",
+      hours: "ITI 2-Year Diploma & Apprentice Certified"
+    },
+    plumbing: {
+      title: "Master Plumber & Sanitary Installation National Trade Certificate",
+      certNumber: `NTC-PLMB-2024-${wIdSuffix}`,
+      issuingBody: "National Council for Vocational Training (NCVT)",
+      issueDate: "10 Mar 2024",
+      validity: "Permanent Recognition",
+      grade: "Grade A+ (92%)",
+      skills: ["High Pressure Pipe Joints", "Bathroom Automation Fixtures", "Water Tank & Pump Drainage"],
+      govtId: `Aadhaar: **** **** ${wIdSuffix} (DigiLocker Verified)`,
+      policeCheck: "Clean Record — Police Verification Cleared",
+      practicalScore: "92 / 100",
+      hours: "ITI Trade Training Certified"
+    }
+  };
+
+  return certMap[w.category] || {
+    title: `National Trade Certificate: Certified ${catLabel} Specialist`,
+    certNumber: `NSDC-AS-2024-${wIdSuffix}`,
+    issuingBody: "Assam Skill Development Mission & NSDC",
+    issueDate: "10 Jan 2024",
+    validity: "Permanent Recognition",
+    grade: "Grade A (92%)",
+    skills: w.skills || ["Standard Trade Service", "Customer Safety Protocol"],
+    govtId: `Aadhaar: **** **** ${wIdSuffix} (DigiLocker Authenticated)`,
+    policeCheck: "Clean Record — Verified by Assam Police Portal",
+    practicalScore: "92 / 100",
+    hours: "320 Hours Professional Vocational Training"
+  };
+}
+
+function openCertificateAuditModal(w) {
+  const cert = getWorkerDemoCertificates(w);
+  const cat = getCategory(w.category);
+
+  openModal(`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0">📜 Credentials & Certificate Audit</h3>
+      <span class="badge ${w.verificationStatus === "verified" ? "badge-success" : "badge-warn"}">
+        ${w.verificationStatus === "verified" ? "✓ Verified" : "Pending Audit"}
+      </span>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px">
+      Audit official trade certificates, identity documents, and police verification for cooperative onboarding.
+    </p>
+
+    <!-- Visual Certificate Preview Document -->
+    <div class="certificate-doc">
+      <div class="cert-header-badge">🏛️ GOVT. OF ASSAM & SEVASETU COOPERATIVE VOCATIONAL COUNCIL</div>
+      <div style="font-size:0.75rem;letter-spacing:1px;color:#64748b;text-transform:uppercase">Certificate of Trade Competency & Skill Qualification</div>
+      <div class="cert-title">${cert.title}</div>
+      <div style="font-size:0.8rem;color:#64748b;margin-top:4px">This is to certify that</div>
+      <div class="cert-recipient">${w.name}</div>
+      <div style="font-size:0.83rem;color:#334155;max-width:480px;margin:0 auto">
+        has successfully passed the rigorous skill assessment, practical field test, and safety evaluation for <b>${cat?.label || w.category} Services</b>.
+      </div>
+
+      <div class="cert-meta-grid">
+        <div><b>Certificate No:</b> <code>${cert.certNumber}</code></div>
+        <div><b>Issuing Body:</b> ${cert.issuingBody}</div>
+        <div><b>Assessment Grade:</b> <span style="color:#065f46;font-weight:700">${cert.grade}</span></div>
+        <div><b>Practical Score:</b> <span style="font-weight:700">${cert.practicalScore}</span></div>
+        <div><b>Issue Date:</b> ${cert.issueDate}</div>
+        <div><b>Training Program:</b> ${cert.hours}</div>
+      </div>
+
+      <div style="text-align:left;font-size:0.78rem;margin:10px 0;background:#fff;padding:8px 12px;border-radius:6px;border:1px solid #e2e8f0">
+        <b>Core Skills Evaluated:</b> ${cert.skills.join(" • ")}
+      </div>
+
+      <div class="cert-signatures">
+        <div style="text-align:left">
+          <div style="font-family:serif;font-style:italic;font-size:0.95rem;color:#0f172a">P. K. Baruah, IAS</div>
+          <div>Director, Vocational Training Assam</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:1.8rem">🏅</div>
+          <div style="font-size:0.68rem;letter-spacing:1px;font-weight:700">SEVA COOP SEAL</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:serif;font-style:italic;font-size:0.95rem;color:#0f172a">H. R. Goswami</div>
+          <div>Registrar of Cooperative Societies</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Official Verification Checkpoints -->
+    <h4 style="font-size:0.88rem;margin-bottom:8px">Official Audit Verification Checklist:</h4>
+    <div class="audit-checkpoint">
+      <span style="color:#059669;font-size:1.1rem">✅</span>
+      <div><b>Identity Proof:</b> ${cert.govtId}</div>
+    </div>
+    <div class="audit-checkpoint">
+      <span style="color:#059669;font-size:1.1rem">✅</span>
+      <div><b>Police Clearance:</b> ${cert.policeCheck}</div>
+    </div>
+    <div class="audit-checkpoint">
+      <span style="color:#059669;font-size:1.1rem">✅</span>
+      <div><b>Cooperative ID:</b> <code>${w.cooperativeMemberId || "SEVA-COOP"}</code> · Address: ${w.address || "Guwahati"}</div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-container').innerHTML=''">Close</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨️ Print Certificate</button>
+      ${w.verificationStatus !== "verified" ? `
+        <button class="btn btn-primary btn-sm btn-modal-verify" data-id="${w.id}">✓ Approve & Verify Profile</button>
+      ` : `
+        <span class="badge badge-success" style="align-self:center">✓ Profile Verified & Active</span>
+      `}
+    </div>
+  `, "modal-cert");
+
+  document.querySelector(".btn-modal-verify")?.addEventListener("click", () => {
+    setWorkerVerification(w.id, "verified");
+    closeModal();
+    showToast(`Worker ${w.name}'s profile and certificate verified!`, "✓");
+    renderAll();
+  });
 }
 
 // Ensure logged in as admin
@@ -368,13 +671,17 @@ function renderWorkers() {
             <div><b>Expected Rate:</b> ${money(w.expectedRate || 400)} / job</div>
             <div><b>Insurance:</b> ${badge(w.welfare?.insurance || "pending", w.welfare?.insurance === "covered" ? "success" : "warn")}</div>
           </div>
-          <div style="display:flex;gap:10px;justify-content:flex-end">
+          <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
             <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-container').innerHTML=''">Close</button>
+            <button class="btn btn-ghost btn-sm btn-inspect-cert" data-id="${w.id}">📜 View Demo Certificate</button>
             ${w.verificationStatus !== "verified" ? `
               <button class="btn btn-primary btn-sm btn-verify-direct" data-id="${w.id}">✓ Verify Member</button>
             ` : ""}
           </div>
         `);
+        document.querySelector(".btn-inspect-cert")?.addEventListener("click", () => {
+          openCertificateAuditModal(w);
+        });
         document.querySelector(".btn-verify-direct")?.addEventListener("click", () => {
           setWorkerVerification(w.id, "verified");
           closeModal();
@@ -403,36 +710,73 @@ function renderVerification() {
       </div>
     ` : `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <p style="color:var(--muted);font-size:0.9rem"><b>${workers.length}</b> workers awaiting credentials audit and ID verification.</p>
+        <div>
+          <h3 style="margin:0">Worker Verification & Audit Queue</h3>
+          <p style="color:var(--muted);font-size:0.88rem;margin-top:2px"><b>${workers.length}</b> workers awaiting credentials audit, vocational certificates, and ID verification.</p>
+        </div>
         <button class="btn btn-primary btn-sm" id="btn-verify-all">⚡ Approve & Verify All</button>
       </div>
       <div class="grid grid-2">
-        ${workers.map(w => `
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div>
-                <b>${w.name}</b>
-                <div style="color:var(--muted);font-size:0.83rem;margin-top:2px">ID: ${w.cooperativeMemberId || "SEVA-COOP"}</div>
+        ${workers.map(w => {
+          const cert = getWorkerDemoCertificates(w);
+          return `
+          <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                  <b style="font-size:1.05rem">${w.name}</b>
+                  <div style="color:var(--muted);font-size:0.83rem;margin-top:2px">ID: <code>${w.cooperativeMemberId || "SEVA-COOP"}</code></div>
+                </div>
+                ${verificationBadge(w.verificationStatus || "pending")}
               </div>
-              ${verificationBadge(w.verificationStatus || "pending")}
+              <p style="color:var(--muted);font-size:0.85rem;margin-top:8px">
+                ${getCategory(w.category)?.label || w.category} · ${w.experience || 1} yrs exp · ${w.qualification || "Trade Trained"}
+              </p>
+              
+              <!-- Demo Certificates & Identity Documents Box -->
+              <div style="margin:12px 0;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <span style="font-size:0.75rem;font-weight:700;color:var(--coop-green);text-transform:uppercase;letter-spacing:0.5px">
+                    📑 Attached Demo Certificates & Proofs
+                  </span>
+                  <span style="font-size:0.75rem;color:var(--muted)">3 documents</span>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="cert-pill btn-audit-cert" data-id="${w.id}" title="Click to inspect Certificate">
+                    📜 ${cert.title.length > 28 ? cert.title.substring(0, 26) + '…' : cert.title} (PDF)
+                  </button>
+                  <button class="cert-pill btn-audit-cert" data-id="${w.id}" title="Click to inspect Aadhaar Verification">
+                    🪪 DigiLocker ID Proof
+                  </button>
+                  <button class="cert-pill btn-audit-cert" data-id="${w.id}" title="Click to inspect Police Clearance">
+                    🛡️ Police Clearance Record
+                  </button>
+                </div>
+              </div>
+
+              <p style="font-size:0.85rem;margin-top:4px">
+                <b>Location:</b> ${w.address || "Guwahati"} · <b>Assessment Grade:</b> <span style="color:var(--success);font-weight:600">${cert.grade}</span>
+              </p>
             </div>
-            <p style="color:var(--muted);font-size:0.85rem;margin-top:8px">
-              ${getCategory(w.category)?.label || w.category} · ${w.experience || 1} yrs exp · ${w.qualification || "Trade Trained"}
-            </p>
-            <p style="font-size:0.85rem;margin-top:6px">
-              <b>Certifications:</b> ${(w.certifications || []).join(", ") || "Trade Certificate"}
-            </p>
-            <p style="font-size:0.85rem;margin-top:2px">
-              <b>Location:</b> ${w.address || "Guwahati"}
-            </p>
-            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-              <button class="btn btn-primary btn-sm" data-id="${w.id}" data-status="verified">✓ Verify</button>
-              <button class="btn btn-ghost btn-sm" data-id="${w.id}" data-status="under_review">🔍 Under Review</button>
+
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px">
+              <button class="btn btn-primary btn-sm btn-audit-cert" data-id="${w.id}" style="display:inline-flex;align-items:center;gap:4px">
+                🔍 Verify Profile & Certificate
+              </button>
+              <button class="btn btn-ghost btn-sm" data-id="${w.id}" data-status="verified">✓ Quick Verify</button>
+              <button class="btn btn-ghost btn-sm" data-id="${w.id}" data-status="under_review">Under Review</button>
               <button class="btn btn-ghost btn-sm" data-id="${w.id}" data-status="rejected" style="color:var(--danger)">✕ Reject</button>
             </div>
           </div>
-        `).join("")}
+        `}).join("")}
       </div>`;
+
+    el.querySelectorAll(".btn-audit-cert").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const w = getWorkerById(btn.dataset.id);
+        if (w) openCertificateAuditModal(w);
+      });
+    });
 
     el.querySelectorAll("[data-status]").forEach(btn => {
       btn.addEventListener("click", () => {

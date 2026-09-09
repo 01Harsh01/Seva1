@@ -16,6 +16,21 @@
   status = 200
 
 [[redirects]]
+  from   = "/admin_dashboard.html"
+  to     = "/admin-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from   = "/worker_dashboard.html"
+  to     = "/worker-dashboard.html"
+  status = 200
+
+[[redirects]]
+  from   = "/customer_dashboard.html"
+  to     = "/customer-dashboard.html"
+  status = 200
+
+[[redirects]]
   from   = "/*"
   to     = "/404.html"
   status = 404

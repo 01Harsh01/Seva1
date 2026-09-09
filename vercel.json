@@ -2,6 +2,9 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/services/:category", "destination": "/category.html?category=:category" }
+    { "source": "/services/:category", "destination": "/category.html?category=:category" },
+    { "source": "/admin_dashboard.html", "destination": "/admin-dashboard.html" },
+    { "source": "/worker_dashboard.html", "destination": "/worker-dashboard.html" },
+    { "source": "/customer_dashboard.html", "destination": "/customer-dashboard.html" }
   ]
 }
