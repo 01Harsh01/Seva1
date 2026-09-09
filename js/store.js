@@ -78,20 +78,90 @@ export function setSession(session) {
 export function logout() {
   localStorage.removeItem(KEYS.SESSION);
 }
+export function ensureDemoUsers() {
+  let users = read(KEYS.USERS, []);
+  let workers = read(KEYS.WORKERS, []);
+  let updated = false;
+
+  if (!users || !users.length || !workers || !workers.length) {
+    seedDemoData(true);
+    return;
+  }
+
+  // Migrate any old @homesync.demo emails
+  users.forEach((u) => {
+    if (u.email && u.email.includes("@homesync.demo")) {
+      u.email = u.email.replace("@homesync.demo", "@sevasetu.demo");
+      updated = true;
+    }
+  });
+
+  workers.forEach((w) => {
+    if (w.email && w.email.includes("@homesync.demo")) {
+      w.email = w.email.replace("@homesync.demo", "@sevasetu.demo");
+      updated = true;
+    }
+  });
+
+  const hasCust = users.some((u) => u.role === "customer" || (u.email && u.email.includes("customer")));
+  if (!hasCust) {
+    users.push({ id: uid("cust"), role: "customer", name: "Demo Customer", email: "customer@sevasetu.demo", password: "demo1234", phone: "9800000001", createdAt: Date.now() });
+    updated = true;
+  }
+
+  const hasAdmin = users.some((u) => u.role === "admin" || (u.email && u.email.includes("admin")));
+  if (!hasAdmin) {
+    users.push({ id: uid("adm"), role: "admin", name: "Cooperative Admin", email: "admin@sevasetu.demo", password: "demo1234", phone: "9800000002", createdAt: Date.now() });
+    updated = true;
+  }
+
+  const hasWorker = users.some((u) => u.role === "worker" || (u.email && u.email.includes("worker")));
+  if (!hasWorker) {
+    users.push({ id: uid("wuser"), role: "worker", name: "Ramen Das", email: "worker1@sevasetu.demo", password: "demo1234", phone: "9800000003", createdAt: Date.now() });
+    updated = true;
+  }
+
+  if (updated) {
+    write(KEYS.USERS, users);
+    write(KEYS.WORKERS, workers);
+  }
+}
 
 export function findUserByEmail(email) {
+  if (!email) return null;
+  const clean = email.trim().toLowerCase();
+  ensureDemoUsers();
   const users = read(KEYS.USERS, []);
-  const normalized = email.toLowerCase().replace("@homesync.demo", "@sevasetu.demo");
-  return users.find((u) => u.email.toLowerCase() === email.toLowerCase() || u.email.toLowerCase() === normalized);
+
+  // 1. Direct match
+  let user = users.find((u) => u.email && u.email.trim().toLowerCase() === clean);
+  if (user) return user;
+
+  // 2. Domain aliases (@homesync.demo <-> @sevasetu.demo)
+  const alt = clean.includes("@homesync.demo")
+    ? clean.replace("@homesync.demo", "@sevasetu.demo")
+    : clean.replace("@sevasetu.demo", "@homesync.demo");
+  user = users.find((u) => u.email && u.email.trim().toLowerCase() === alt);
+  if (user) return user;
+
+  // 3. Prefix match for demo shortcuts
+  const prefix = clean.split("@")[0];
+  user = users.find((u) => {
+    const ue = (u.email || "").trim().toLowerCase();
+    return ue.split("@")[0] === prefix;
+  });
+  if (user) return user;
+
+  return null;
 }
 
 export function registerCustomer({ name, email, password, phone }) {
   const users = read(KEYS.USERS, []);
   if (findUserByEmail(email)) return { success: false, error: "An account with this email already exists." };
-  const user = { id: uid("cust"), role: "customer", name, email, password, phone, createdAt: Date.now() };
+  const user = { id: uid("cust"), role: "customer", name, email: email.trim(), password: password.trim(), phone, createdAt: Date.now() };
   users.push(user);
   write(KEYS.USERS, users);
-  setSession({ userId: user.id, role: "customer" });
+  setSession({ userId: user.id, role: "customer", name: user.name, email: user.email });
   return { success: true, user };
 }
 
@@ -99,7 +169,7 @@ export function registerWorker(profile) {
   const users = read(KEYS.USERS, []);
   if (findUserByEmail(profile.email)) return { success: false, error: "An account with this email already exists." };
   const userId = uid("wuser");
-  const user = { id: userId, role: "worker", name: profile.name, email: profile.email, password: profile.password, phone: profile.phone, createdAt: Date.now() };
+  const user = { id: userId, role: "worker", name: profile.name, email: profile.email.trim(), password: profile.password.trim(), phone: profile.phone, createdAt: Date.now() };
   users.push(user);
   write(KEYS.USERS, users);
 
@@ -109,7 +179,7 @@ export function registerWorker(profile) {
     userId,
     name: profile.name,
     phone: profile.phone,
-    email: profile.email,
+    email: profile.email.trim(),
     address: profile.address || "",
     lat: profile.lat, lng: profile.lng,
     category: profile.category,
@@ -133,15 +203,29 @@ export function registerWorker(profile) {
   };
   workers.push(worker);
   write(KEYS.WORKERS, workers);
-  setSession({ userId, role: "worker" });
+  setSession({ userId, role: "worker", name: user.name, email: user.email });
   return { success: true, user, worker };
 }
 
 export function login(email, password, expectedRole) {
-  const user = findUserByEmail(email);
-  if (!user || user.password !== password) return { success: false, error: "Invalid email or password." };
-  if (expectedRole && user.role !== expectedRole) return { success: false, error: `This account is registered as a ${user.role}, not a ${expectedRole}.` };
-  setSession({ userId: user.id, role: user.role });
+  if (!email || !email.trim()) return { success: false, error: "Please enter your email address." };
+  if (!password) return { success: false, error: "Please enter your password." };
+
+  const cleanEmail = email.trim();
+  const cleanPass = password.trim();
+
+  ensureDemoUsers();
+  const user = findUserByEmail(cleanEmail);
+
+  if (!user || user.password !== cleanPass) {
+    const isDemo = cleanEmail.includes("customer") || cleanEmail.includes("worker") || cleanEmail.includes("admin");
+    if (isDemo && cleanPass !== "demo1234") {
+      return { success: false, error: "Incorrect password. The demo account password is 'demo1234'." };
+    }
+    return { success: false, error: "Invalid email or password. Please verify your details or use 1-Click Demo Login." };
+  }
+
+  setSession({ userId: user.id, role: user.role, name: user.name, email: user.email });
   return { success: true, user };
 }
 

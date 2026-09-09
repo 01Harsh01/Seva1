@@ -4,47 +4,483 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Log in — SevaSetu</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="stylesheet" href="marketplace.css" />
+<style>
+  /* ============================================================
+     Fancy Login Page Enhancements
+     ============================================================ */
+  .auth-page-wrap {
+    position: relative;
+    min-height: calc(100vh - 160px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px 60px;
+    overflow: hidden;
+  }
+
+  /* Ambient glowing backdrop mesh */
+  .auth-ambient-blobs {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .auth-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.38;
+    animation: authBlobFloat 12s ease-in-out infinite alternate;
+  }
+  .auth-blob-1 {
+    width: 440px;
+    height: 440px;
+    top: -60px;
+    left: 15%;
+    background: radial-gradient(circle, var(--coop-teal) 0%, rgba(15,118,110,0.1) 70%);
+  }
+  .auth-blob-2 {
+    width: 380px;
+    height: 380px;
+    bottom: -40px;
+    right: 15%;
+    background: radial-gradient(circle, #0284C7 0%, rgba(2,132,199,0.1) 70%);
+    animation-delay: -6s;
+  }
+  .auth-blob-3 {
+    width: 260px;
+    height: 260px;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, var(--coop-amber) 0%, rgba(217,119,6,0.1) 70%);
+    opacity: 0.2;
+    animation-delay: -3s;
+  }
+  @keyframes authBlobFloat {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.08); }
+    100% { transform: translateY(20px) scale(0.95); }
+  }
+
+  /* Fancy Auth Container */
+  .auth-fancy-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(15, 118, 110, 0.18);
+    border-radius: 24px;
+    box-shadow: 0 24px 60px -12px rgba(15, 118, 110, 0.18), 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+    padding: 36px 32px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .auth-fancy-card:hover {
+    box-shadow: 0 30px 70px -12px rgba(15, 118, 110, 0.24), 0 12px 30px -4px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Header Branding */
+  .auth-brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--coop-teal-dark);
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    border: 1px solid rgba(15, 118, 110, 0.2);
+  }
+  .auth-header-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.25;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .auth-header-desc {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* Role Selection Tabs */
+  .role-picker {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: #F1F5F9;
+    padding: 5px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  .role-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 4px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+    color: #64748B;
+  }
+  .role-pill .role-icon {
+    font-size: 1.3rem;
+    margin-bottom: 3px;
+    transition: transform 0.2s ease;
+  }
+  .role-pill .role-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .role-pill:hover {
+    color: #0F172A;
+    background: rgba(255,255,255,0.6);
+  }
+  .role-pill.active {
+    background: #FFFFFF;
+    color: var(--coop-teal-dark);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.12), 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .role-pill.active .role-icon {
+    transform: scale(1.15);
+  }
+
+  /* Modern Input Group */
+  .fancy-group {
+    margin-bottom: 18px;
+  }
+  .fancy-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+  }
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .input-icon {
+    position: absolute;
+    left: 14px;
+    color: #94A3B8;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    font-size: 1.05rem;
+    transition: color 0.2s ease;
+  }
+  .fancy-input {
+    width: 100%;
+    padding: 12px 14px 12px 42px;
+    border-radius: 12px;
+    border: 1.5px solid #CBD5E1;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #FFFFFF;
+    color: #0F172A;
+    transition: all 0.2s ease;
+  }
+  .fancy-input:focus {
+    border-color: var(--coop-teal);
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
+    outline: none;
+  }
+  .fancy-input:focus + .input-icon,
+  .input-wrap:focus-within .input-icon {
+    color: var(--coop-teal);
+  }
+  .toggle-pwd-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    transition: color 0.2s;
+  }
+  .toggle-pwd-btn:hover {
+    color: #0F172A;
+  }
+
+  /* Submit Action Button */
+  .auth-submit-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--coop-teal-dark), var(--coop-teal));
+    color: #FFFFFF;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.28);
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 22px;
+  }
+  .auth-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(15, 118, 110, 0.38);
+    background: linear-gradient(135deg, #0B5B54, #0F766E);
+  }
+  .auth-submit-btn:active {
+    transform: translateY(0);
+  }
+  .auth-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  /* 1-Click Quick Demo Box */
+  .quick-demo-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed #CBD5E1;
+  }
+  .quick-demo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .quick-demo-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .demo-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .demo-btn-card {
+    background: #F8FAFC;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .demo-btn-card:hover {
+    background: #FFFFFF;
+    border-color: var(--coop-teal);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 118, 110, 0.12);
+  }
+  .demo-btn-icon {
+    font-size: 1.25rem;
+  }
+  .demo-btn-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0F172A;
+  }
+  .demo-btn-sub {
+    font-size: 0.68rem;
+    color: #64748B;
+  }
+
+  /* Feedback Alerts */
+  .auth-alert {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+    display: none;
+    animation: authShake 0.4s ease;
+  }
+  .auth-alert-error {
+    background: #FEF2F2;
+    border: 1px solid #F87171;
+    color: #991B1B;
+  }
+  .auth-alert-success {
+    background: #F0FDF4;
+    border: 1px solid #4ADE80;
+    color: #166534;
+  }
+  @keyframes authShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+
+  /* Loading Spinner */
+  .spinner-dot {
+    width: 16px;
+    height: 16px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: #FFFFFF;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 520px) {
+    .auth-fancy-card {
+      padding: 26px 20px;
+    }
+    .demo-cards-grid {
+      grid-template-columns: 1fr;
+    }
+    .demo-btn-card {
+      flex-direction: row;
+      justify-content: flex-start;
+      padding: 10px 14px;
+      gap: 10px;
+    }
+  }
+</style>
 </head>
 <body>
 <div id="hs-header"></div>
 
-<div class="container section">
-  <div class="card auth-card">
-    <h2 style="margin-bottom:18px;font-weight:800;color:var(--coop-teal-dark)">Log in to SevaSetu</h2>
-    
-    <div class="auth-tabs" id="role-tabs">
-      <button class="active" data-role="customer">Customer</button>
-      <button data-role="worker">Worker</button>
-      <button data-role="admin">Admin</button>
+<div class="auth-page-wrap">
+  <!-- Ambient backdrop elements -->
+  <div class="auth-ambient-blobs" aria-hidden="true">
+    <div class="auth-blob auth-blob-1"></div>
+    <div class="auth-blob auth-blob-2"></div>
+    <div class="auth-blob auth-blob-3"></div>
+  </div>
+
+  <div class="auth-fancy-card">
+    <div style="text-align:center">
+      <span class="auth-brand-badge">
+        <span>🤝</span>
+        <span>Labour Cooperative Portal</span>
+      </span>
+      <h1 class="auth-header-title">Welcome to SevaSetu</h1>
+      <p class="auth-header-desc">Sign in to access your bookings, worker dashboard, or cooperative governance panel.</p>
     </div>
 
-    <form id="login-form">
-      <div class="form-group">
-        <label>Email</label>
-        <input class="form-control" type="email" id="email" value="customer@sevasetu.demo" required />
+    <!-- Role Switcher -->
+    <div class="role-picker" id="role-picker" role="tablist" aria-label="Account Role">
+      <button class="role-pill active" data-role="customer" type="button" role="tab" aria-selected="true">
+        <span class="role-icon">🛒</span>
+        <span class="role-title">Customer</span>
+      </button>
+      <button class="role-pill" data-role="worker" type="button" role="tab" aria-selected="false">
+        <span class="role-icon">🔧</span>
+        <span class="role-title">Worker</span>
+      </button>
+      <button class="role-pill" data-role="admin" type="button" role="tab" aria-selected="false">
+        <span class="role-icon">🛡️</span>
+        <span class="role-title">Admin</span>
+      </button>
+    </div>
+
+    <!-- Error / Success Alert -->
+    <div class="auth-alert auth-alert-error" id="auth-error-box" role="alert"></div>
+    <div class="auth-alert auth-alert-success" id="auth-success-box" role="alert"></div>
+
+    <!-- Login Form -->
+    <form id="login-form" novalidate>
+      <div class="fancy-group">
+        <label class="fancy-label" for="email">
+          <span>Email Address</span>
+          <span style="font-size:0.75rem;color:var(--muted)" id="role-hint-label">Customer Portal</span>
+        </label>
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input class="fancy-input" type="email" id="email" value="customer@sevasetu.demo" placeholder="name@sevasetu.demo" required autocomplete="email" />
+        </div>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input class="form-control" type="password" id="password" value="demo1234" required />
+
+      <div class="fancy-group">
+        <label class="fancy-label" for="password">
+          <span>Password</span>
+          <span style="font-size:0.75rem;color:var(--coop-teal-dark);cursor:pointer" id="fill-demo-pass" title="Fill demo password">Use demo password</span>
+        </label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="fancy-input" type="password" id="password" value="demo1234" placeholder="••••••••" required autocomplete="current-password" />
+          <button type="button" class="toggle-pwd-btn" id="toggle-pwd" title="Toggle password visibility">👁️</button>
+        </div>
       </div>
-      <p id="error-msg" style="color:var(--danger);font-size:0.85rem;margin-bottom:12px;display:none"></p>
-      <button class="btn btn-primary btn-block" type="submit">Log In</button>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.84rem;margin-top:12px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#475569">
+          <input type="checkbox" id="remember-me" checked style="accent-color:var(--coop-teal)" />
+          <span>Keep me signed in</span>
+        </label>
+        <a href="register.html" style="color:var(--coop-teal-dark);font-weight:600;text-decoration:none">Need help?</a>
+      </div>
+
+      <button class="auth-submit-btn" type="submit" id="submit-btn">
+        <span id="btn-text">Sign In to SevaSetu</span>
+        <span id="btn-icon">→</span>
+      </button>
     </form>
 
-    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
-      <b style="font-size:0.82rem;color:var(--muted);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">⚡ Quick 1-Click Demo Login:</b>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-sm" id="quick-cust" style="flex:1">Demo Customer</button>
-        <button class="btn btn-ghost btn-sm" id="quick-work" style="flex:1">Demo Worker</button>
-        <button class="btn btn-ghost btn-sm" id="quick-adm" style="flex:1">Demo Admin</button>
+    <!-- 1-Click Quick Demo Login Showcase -->
+    <div class="quick-demo-section">
+      <div class="quick-demo-header">
+        <span class="quick-demo-title">⚡ 1-Click Quick Demo Login</span>
+        <span style="font-size:0.72rem;background:#E2E8F0;color:#475569;padding:2px 7px;border-radius:6px;font-weight:600">Instant Access</span>
+      </div>
+      <div class="demo-cards-grid">
+        <button type="button" class="demo-btn-card" id="quick-cust">
+          <span class="demo-btn-icon">🛒</span>
+          <span class="demo-btn-name">Customer</span>
+          <span class="demo-btn-sub">Book Services</span>
+        </button>
+        <button type="button" class="demo-btn-card" id="quick-work">
+          <span class="demo-btn-icon">🔧</span>
+          <span class="demo-btn-name">Worker</span>
+          <span class="demo-btn-sub">Jobs & Earnings</span>
+        </button>
+        <button type="button" class="demo-btn-card" id="quick-adm">
+          <span class="demo-btn-icon">🛡️</span>
+          <span class="demo-btn-name">Admin</span>
+          <span class="demo-btn-sub">Manage Society</span>
+        </button>
       </div>
     </div>
 
-    <p style="margin-top:18px;font-size:0.85rem;text-align:center;color:var(--muted)">
-      No account yet? <a href="register.html" style="color:var(--coop-teal-dark);font-weight:700">Register here</a>
+    <!-- Register Link -->
+    <p style="margin-top:22px;font-size:0.88rem;text-align:center;color:var(--muted)">
+      Don't have an account? <a href="register.html" style="color:var(--coop-teal-dark);font-weight:700;text-decoration:none">Register as Customer or Worker →</a>
     </p>
   </div>
 </div>
@@ -53,55 +489,159 @@
 
 <script type="module">
 import "./js/ui.js";
-import { login, currentUser, qs } from "./js/store.js";
+import { login, currentUser, ensureDemoUsers, qs } from "./js/store.js";
+
+// Make sure demo accounts are seeded and ready
+ensureDemoUsers();
 
 const redirectUrl = qs("redirect");
+let currentRole = "customer";
 
-let role = "customer";
-const creds = {
-  customer: { email: "customer@sevasetu.demo", pass: "demo1234" },
-  worker: { email: "worker1@sevasetu.demo", pass: "demo1234" },
-  admin: { email: "admin@sevasetu.demo", pass: "demo1234" },
+const roleProfiles = {
+  customer: {
+    email: "customer@sevasetu.demo",
+    pass: "demo1234",
+    label: "Customer Portal",
+    btn: "Sign In as Customer",
+  },
+  worker: {
+    email: "worker1@sevasetu.demo",
+    pass: "demo1234",
+    label: "Worker Portal",
+    btn: "Sign In as Worker",
+  },
+  admin: {
+    email: "admin@sevasetu.demo",
+    pass: "demo1234",
+    label: "Cooperative Admin",
+    btn: "Sign In as Admin",
+  },
 };
 
-function selectRole(r) {
-  role = r;
-  document.querySelectorAll("#role-tabs button").forEach(b => b.classList.toggle("active", b.dataset.role === r));
-  document.getElementById("email").value = creds[r].email;
-  document.getElementById("password").value = creds[r].pass;
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const errorBox = document.getElementById("auth-error-box");
+const successBox = document.getElementById("auth-success-box");
+const submitBtn = document.getElementById("submit-btn");
+const btnText = document.getElementById("btn-text");
+const roleHint = document.getElementById("role-hint-label");
+
+function setRole(r) {
+  currentRole = r;
+  document.querySelectorAll("#role-picker button").forEach((b) => {
+    const isThis = b.dataset.role === r;
+    b.classList.toggle("active", isThis);
+    b.setAttribute("aria-selected", isThis ? "true" : "false");
+  });
+
+  const p = roleProfiles[r];
+  if (p) {
+    emailInput.value = p.email;
+    passwordInput.value = p.pass;
+    roleHint.textContent = p.label;
+    btnText.textContent = p.btn;
+  }
+  clearAlerts();
 }
 
-document.querySelectorAll("#role-tabs button").forEach(btn => {
-  btn.addEventListener("click", () => selectRole(btn.dataset.role));
+function clearAlerts() {
+  errorBox.style.display = "none";
+  errorBox.textContent = "";
+  successBox.style.display = "none";
+  successBox.textContent = "";
+}
+
+function showError(msg) {
+  clearAlerts();
+  errorBox.textContent = msg;
+  errorBox.style.display = "block";
+}
+
+function showSuccess(msg) {
+  clearAlerts();
+  successBox.textContent = msg;
+  successBox.style.display = "block";
+}
+
+// Role tabs listener
+document.querySelectorAll("#role-picker button").forEach((btn) => {
+  btn.addEventListener("click", () => setRole(btn.dataset.role));
 });
 
-document.getElementById("quick-cust")?.addEventListener("click", () => doLogin("customer@sevasetu.demo", "demo1234", "customer"));
-document.getElementById("quick-work")?.addEventListener("click", () => doLogin("worker1@sevasetu.demo", "demo1234", "worker"));
-document.getElementById("quick-adm")?.addEventListener("click", () => doLogin("admin@sevasetu.demo", "demo1234", "admin"));
+// Toggle password visibility
+const togglePwdBtn = document.getElementById("toggle-pwd");
+togglePwdBtn.addEventListener("click", () => {
+  const isPass = passwordInput.type === "password";
+  passwordInput.type = isPass ? "text" : "password";
+  togglePwdBtn.textContent = isPass ? "🙈" : "👁️";
+});
 
-function doLogin(email, password, r) {
-  const res = login(email, password, r);
-  const errEl = document.getElementById("error-msg");
-  if (!res.success) {
-    errEl.textContent = res.error;
-    errEl.style.display = "block";
-    return;
-  }
-  if (redirectUrl) {
-    location.href = redirectUrl;
-    return;
-  }
-  if (r === "customer") location.href = "marketplace.html";
-  else if (r === "worker") location.href = "worker-dashboard.html";
-  else location.href = "admin-dashboard.html";
+// Fill demo pass shortcut
+document.getElementById("fill-demo-pass")?.addEventListener("click", () => {
+  passwordInput.value = "demo1234";
+  clearAlerts();
+});
+
+// 1-Click quick logins
+document.getElementById("quick-cust")?.addEventListener("click", () => {
+  setRole("customer");
+  executeLogin("customer@sevasetu.demo", "demo1234", "customer");
+});
+document.getElementById("quick-work")?.addEventListener("click", () => {
+  setRole("worker");
+  executeLogin("worker1@sevasetu.demo", "demo1234", "worker");
+});
+document.getElementById("quick-adm")?.addEventListener("click", () => {
+  setRole("admin");
+  executeLogin("admin@sevasetu.demo", "demo1234", "admin");
+});
+
+function executeLogin(email, password, r) {
+  clearAlerts();
+  submitBtn.disabled = true;
+  btnText.innerHTML = `<span class="spinner-dot"></span> Authenticating…`;
+
+  setTimeout(() => {
+    const res = login(email, password, r);
+    if (!res.success) {
+      submitBtn.disabled = false;
+      btnText.textContent = roleProfiles[r]?.btn || "Sign In";
+      showError(res.error);
+      return;
+    }
+
+    const user = res.user;
+    showSuccess(`✓ Welcome back, ${user.name}! Redirecting to dashboard…`);
+    btnText.innerHTML = `✓ Authenticated!`;
+
+    setTimeout(() => {
+      if (redirectUrl) {
+        location.href = redirectUrl;
+        return;
+      }
+      if (user.role === "worker") {
+        location.href = "worker-dashboard.html";
+      } else if (user.role === "admin") {
+        location.href = "admin-dashboard.html";
+      } else {
+        location.href = "marketplace.html";
+      }
+    }, 500);
+  }, 350);
 }
 
 document.getElementById("login-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  doLogin(email, password, role);
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  executeLogin(email, password, currentRole);
 });
+
+// If already logged in, show helpful banner or let them continue
+const existingUser = currentUser();
+if (existingUser) {
+  showSuccess(`Signed in as ${existingUser.name} (${existingUser.role}). Choose a profile above or submit to continue.`);
+}
 </script>
 </body>
 </html>
