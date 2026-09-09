@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="marketplace.css" />
 <style>
   /* ============================================================
-     Fancy Login Page Enhancements
+     Fancy Glassmorphic Auth Portal
      ============================================================ */
   .auth-page-wrap {
     position: relative;
@@ -17,76 +17,55 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px 16px 60px;
+    padding: 36px 16px 60px;
     overflow: hidden;
   }
-
-  /* Ambient glowing backdrop mesh */
   .auth-ambient-blobs {
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    overflow: hidden;
   }
   .auth-blob {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
-    opacity: 0.38;
-    animation: authBlobFloat 12s ease-in-out infinite alternate;
+    opacity: 0.35;
+    animation: authBlobFloat 10s ease-in-out infinite alternate;
   }
   .auth-blob-1 {
     width: 440px;
     height: 440px;
     top: -60px;
     left: 15%;
-    background: radial-gradient(circle, var(--coop-teal) 0%, rgba(15,118,110,0.1) 70%);
+    background: radial-gradient(circle, var(--coop-teal) 0%, rgba(15,118,110,0.05) 70%);
   }
   .auth-blob-2 {
     width: 380px;
     height: 380px;
     bottom: -40px;
     right: 15%;
-    background: radial-gradient(circle, #0284C7 0%, rgba(2,132,199,0.1) 70%);
-    animation-delay: -6s;
-  }
-  .auth-blob-3 {
-    width: 260px;
-    height: 260px;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(circle, var(--coop-amber) 0%, rgba(217,119,6,0.1) 70%);
-    opacity: 0.2;
-    animation-delay: -3s;
+    background: radial-gradient(circle, #0284C7 0%, rgba(2,132,199,0.05) 70%);
+    animation-delay: -5s;
   }
   @keyframes authBlobFloat {
     0% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-30px) scale(1.08); }
-    100% { transform: translateY(20px) scale(0.95); }
+    100% { transform: translateY(-24px) scale(1.06); }
   }
-
-  /* Fancy Auth Container */
   .auth-fancy-card {
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 500px;
-    background: rgba(255, 255, 255, 0.92);
+    max-width: 480px;
+    background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(15, 118, 110, 0.18);
-    border-radius: 24px;
+    border: 1px solid rgba(15, 118, 110, 0.2);
+    border-radius: 22px;
     box-shadow: 0 24px 60px -12px rgba(15, 118, 110, 0.18), 0 8px 24px -4px rgba(0, 0, 0, 0.06);
-    padding: 36px 32px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 36px 30px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
-  .auth-fancy-card:hover {
-    box-shadow: 0 30px 70px -12px rgba(15, 118, 110, 0.24), 0 12px 30px -4px rgba(0, 0, 0, 0.08);
-  }
-
-  /* Header Branding */
   .auth-brand-badge {
     display: inline-flex;
     align-items: center;
@@ -101,30 +80,25 @@
     border: 1px solid rgba(15, 118, 110, 0.2);
   }
   .auth-header-title {
-    font-size: 1.75rem;
+    font-size: 1.7rem;
     font-weight: 800;
     color: #0F172A;
     line-height: 1.25;
     margin-bottom: 6px;
-    letter-spacing: -0.02em;
   }
   .auth-header-desc {
     color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 24px;
-    line-height: 1.5;
+    font-size: 0.88rem;
+    margin-bottom: 22px;
   }
-
-  /* Role Selection Tabs */
   .role-picker {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     background: #F1F5F9;
     padding: 5px;
-    border-radius: 14px;
-    margin-bottom: 24px;
-    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 12px;
+    margin-bottom: 22px;
   }
   .role-pill {
     display: flex;
@@ -137,13 +111,12 @@
     background: transparent;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+    transition: all 0.2s ease;
     color: #64748B;
   }
   .role-pill .role-icon {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     margin-bottom: 3px;
-    transition: transform 0.2s ease;
   }
   .role-pill .role-title {
     font-size: 0.82rem;
@@ -156,15 +129,10 @@
   .role-pill.active {
     background: #FFFFFF;
     color: var(--coop-teal-dark);
-    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.12), 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.14);
   }
-  .role-pill.active .role-icon {
-    transform: scale(1.15);
-  }
-
-  /* Modern Input Group */
   .fancy-group {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
   .fancy-label {
     display: flex;
@@ -185,17 +153,14 @@
     left: 14px;
     color: #94A3B8;
     pointer-events: none;
-    display: flex;
-    align-items: center;
-    font-size: 1.05rem;
-    transition: color 0.2s ease;
+    font-size: 1rem;
   }
   .fancy-input {
     width: 100%;
     padding: 12px 14px 12px 42px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1.5px solid #CBD5E1;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-family: inherit;
     background: #FFFFFF;
     color: #0F172A;
@@ -206,10 +171,6 @@
     box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
     outline: none;
   }
-  .fancy-input:focus + .input-icon,
-  .input-wrap:focus-within .input-icon {
-    color: var(--coop-teal);
-  }
   .toggle-pwd-btn {
     position: absolute;
     right: 12px;
@@ -219,68 +180,46 @@
     cursor: pointer;
     font-size: 0.9rem;
     padding: 6px;
-    display: flex;
-    align-items: center;
-    border-radius: 6px;
-    transition: color 0.2s;
   }
-  .toggle-pwd-btn:hover {
-    color: #0F172A;
-  }
-
-  /* Submit Action Button */
   .auth-submit-btn {
     width: 100%;
-    padding: 14px;
-    border-radius: 12px;
+    padding: 13px;
+    border-radius: 10px;
     border: none;
     background: linear-gradient(135deg, var(--coop-teal-dark), var(--coop-teal));
     color: #FFFFFF;
-    font-size: 1rem;
+    font-size: 0.98rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.28);
-    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-top: 22px;
+    margin-top: 18px;
   }
   .auth-submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(15, 118, 110, 0.38);
-    background: linear-gradient(135deg, #0B5B54, #0F766E);
+    box-shadow: 0 12px 26px rgba(15, 118, 110, 0.35);
   }
-  .auth-submit-btn:active {
-    transform: translateY(0);
-  }
-  .auth-submit-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-
-  /* 1-Click Quick Demo Box */
   .quick-demo-section {
-    margin-top: 24px;
-    padding-top: 20px;
+    margin-top: 22px;
+    padding-top: 18px;
     border-top: 1px dashed #CBD5E1;
   }
   .quick-demo-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .quick-demo-title {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: #475569;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
   .demo-cards-grid {
     display: grid;
@@ -290,8 +229,8 @@
   .demo-btn-card {
     background: #F8FAFC;
     border: 1.5px solid #E2E8F0;
-    border-radius: 12px;
-    padding: 10px 8px;
+    border-radius: 10px;
+    padding: 10px 6px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -306,27 +245,15 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(15, 118, 110, 0.12);
   }
-  .demo-btn-icon {
-    font-size: 1.25rem;
-  }
-  .demo-btn-name {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #0F172A;
-  }
-  .demo-btn-sub {
-    font-size: 0.68rem;
-    color: #64748B;
-  }
-
-  /* Feedback Alerts */
+  .demo-btn-icon { font-size: 1.2rem; }
+  .demo-btn-name { font-size: 0.78rem; font-weight: 700; color: #0F172A; }
+  .demo-btn-sub { font-size: 0.68rem; color: #64748B; }
   .auth-alert {
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    margin-bottom: 16px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
     display: none;
-    animation: authShake 0.4s ease;
   }
   .auth-alert-error {
     background: #FEF2F2;
@@ -338,38 +265,18 @@
     border: 1px solid #4ADE80;
     color: #166534;
   }
-  @keyframes authShake {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-6px); }
-    40%, 80% { transform: translateX(6px); }
-  }
-
-  /* Loading Spinner */
   .spinner-dot {
-    width: 16px;
-    height: 16px;
-    border: 2.5px solid rgba(255,255,255,0.3);
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
     border-top-color: #FFFFFF;
     border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    animation: spin 0.6s linear infinite;
   }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
+  @keyframes spin { to { transform: rotate(360deg); } }
   @media (max-width: 520px) {
-    .auth-fancy-card {
-      padding: 26px 20px;
-    }
-    .demo-cards-grid {
-      grid-template-columns: 1fr;
-    }
-    .demo-btn-card {
-      flex-direction: row;
-      justify-content: flex-start;
-      padding: 10px 14px;
-      gap: 10px;
-    }
+    .demo-cards-grid { grid-template-columns: 1fr; }
+    .demo-btn-card { flex-direction: row; justify-content: flex-start; padding: 10px 14px; gap: 10px; }
   }
 </style>
 </head>
@@ -377,11 +284,9 @@
 <div id="hs-header"></div>
 
 <div class="auth-page-wrap">
-  <!-- Ambient backdrop elements -->
   <div class="auth-ambient-blobs" aria-hidden="true">
     <div class="auth-blob auth-blob-1"></div>
     <div class="auth-blob auth-blob-2"></div>
-    <div class="auth-blob auth-blob-3"></div>
   </div>
 
   <div class="auth-fancy-card">
@@ -410,12 +315,12 @@
       </button>
     </div>
 
-    <!-- Error / Success Alert -->
+    <!-- Alerts -->
     <div class="auth-alert auth-alert-error" id="auth-error-box" role="alert"></div>
     <div class="auth-alert auth-alert-success" id="auth-success-box" role="alert"></div>
 
     <!-- Login Form -->
-    <form id="login-form" novalidate>
+    <form id="login-form">
       <div class="fancy-group">
         <label class="fancy-label" for="email">
           <span>Email Address</span>
@@ -423,33 +328,25 @@
         </label>
         <div class="input-wrap">
           <span class="input-icon">✉️</span>
-          <input class="fancy-input" type="email" id="email" value="customer@sevasetu.demo" placeholder="name@sevasetu.demo" required autocomplete="email" />
+          <input class="fancy-input" type="email" id="email" value="customer@sevasetu.demo" placeholder="name@sevasetu.demo" required />
         </div>
       </div>
 
       <div class="fancy-group">
         <label class="fancy-label" for="password">
           <span>Password</span>
-          <span style="font-size:0.75rem;color:var(--coop-teal-dark);cursor:pointer" id="fill-demo-pass" title="Fill demo password">Use demo password</span>
+          <span style="font-size:0.75rem;color:var(--coop-teal-dark);cursor:pointer;font-weight:600" id="fill-demo-pass">Demo: demo1234</span>
         </label>
         <div class="input-wrap">
           <span class="input-icon">🔒</span>
-          <input class="fancy-input" type="password" id="password" value="demo1234" placeholder="••••••••" required autocomplete="current-password" />
-          <button type="button" class="toggle-pwd-btn" id="toggle-pwd" title="Toggle password visibility">👁️</button>
+          <input class="fancy-input" type="password" id="password" value="demo1234" placeholder="••••••••" required />
+          <button type="button" class="toggle-pwd-btn" id="toggle-pwd" title="Show/Hide password">👁️</button>
         </div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.84rem;margin-top:12px">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#475569">
-          <input type="checkbox" id="remember-me" checked style="accent-color:var(--coop-teal)" />
-          <span>Keep me signed in</span>
-        </label>
-        <a href="register.html" style="color:var(--coop-teal-dark);font-weight:600;text-decoration:none">Need help?</a>
       </div>
 
       <button class="auth-submit-btn" type="submit" id="submit-btn">
         <span id="btn-text">Sign In to SevaSetu</span>
-        <span id="btn-icon">→</span>
+        <span>→</span>
       </button>
     </form>
 
@@ -457,7 +354,6 @@
     <div class="quick-demo-section">
       <div class="quick-demo-header">
         <span class="quick-demo-title">⚡ 1-Click Quick Demo Login</span>
-        <span style="font-size:0.72rem;background:#E2E8F0;color:#475569;padding:2px 7px;border-radius:6px;font-weight:600">Instant Access</span>
       </div>
       <div class="demo-cards-grid">
         <button type="button" class="demo-btn-card" id="quick-cust">
@@ -479,8 +375,8 @@
     </div>
 
     <!-- Register Link -->
-    <p style="margin-top:22px;font-size:0.88rem;text-align:center;color:var(--muted)">
-      Don't have an account? <a href="register.html" style="color:var(--coop-teal-dark);font-weight:700;text-decoration:none">Register as Customer or Worker →</a>
+    <p style="margin-top:20px;font-size:0.85rem;text-align:center;color:var(--muted)">
+      Don't have an account? <a href="register.html" style="color:var(--coop-teal-dark);font-weight:700;text-decoration:none">Register here →</a>
     </p>
   </div>
 </div>
@@ -490,8 +386,8 @@
 <script type="module">
 import "./js/ui.js";
 import { login, currentUser, ensureDemoUsers, qs } from "./js/store.js";
+import { renderHeader } from "./js/ui.js";
 
-// Make sure demo accounts are seeded and ready
 ensureDemoUsers();
 
 const redirectUrl = qs("redirect");
@@ -503,18 +399,21 @@ const roleProfiles = {
     pass: "demo1234",
     label: "Customer Portal",
     btn: "Sign In as Customer",
+    target: "marketplace.html",
   },
   worker: {
     email: "worker1@sevasetu.demo",
     pass: "demo1234",
     label: "Worker Portal",
     btn: "Sign In as Worker",
+    target: "worker-dashboard.html",
   },
   admin: {
     email: "admin@sevasetu.demo",
     pass: "demo1234",
     label: "Cooperative Admin",
     btn: "Sign In as Admin",
+    target: "admin-dashboard.html",
   },
 };
 
@@ -613,6 +512,7 @@ function executeLogin(email, password, r) {
     const user = res.user;
     showSuccess(`✓ Welcome back, ${user.name}! Redirecting to dashboard…`);
     btnText.innerHTML = `✓ Authenticated!`;
+    renderHeader();
 
     setTimeout(() => {
       if (redirectUrl) {
@@ -626,8 +526,8 @@ function executeLogin(email, password, r) {
       } else {
         location.href = "marketplace.html";
       }
-    }, 500);
-  }, 350);
+    }, 400);
+  }, 250);
 }
 
 document.getElementById("login-form").addEventListener("submit", (e) => {
@@ -637,10 +537,13 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   executeLogin(email, password, currentRole);
 });
 
-// If already logged in, show helpful banner or let them continue
+// Set initial role state
+setRole("customer");
+
+// If already logged in, show helpful banner
 const existingUser = currentUser();
 if (existingUser) {
-  showSuccess(`Signed in as ${existingUser.name} (${existingUser.role}). Choose a profile above or submit to continue.`);
+  showSuccess(`Currently signed in as ${existingUser.name} (${existingUser.role}). Choose a profile or submit to switch.`);
 }
 </script>
 </body>

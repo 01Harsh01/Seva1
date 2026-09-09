@@ -78,6 +78,37 @@ export function setSession(session) {
 export function logout() {
   localStorage.removeItem(KEYS.SESSION);
 }
+
+const DEMO_ACCOUNTS = {
+  customer: {
+    id: "demo_cust_01",
+    role: "customer",
+    name: "Demo Customer",
+    email: "customer@sevasetu.demo",
+    password: "demo1234",
+    phone: "9800000001",
+    createdAt: 1700000000000,
+  },
+  worker: {
+    id: "demo_wuser_01",
+    role: "worker",
+    name: "Ramen Das",
+    email: "worker1@sevasetu.demo",
+    password: "demo1234",
+    phone: "9800000003",
+    createdAt: 1700000000000,
+  },
+  admin: {
+    id: "demo_adm_01",
+    role: "admin",
+    name: "Cooperative Admin",
+    email: "admin@sevasetu.demo",
+    password: "demo1234",
+    phone: "9800000002",
+    createdAt: 1700000000000,
+  },
+};
+
 export function ensureDemoUsers() {
   let users = read(KEYS.USERS, []);
   let workers = read(KEYS.WORKERS, []);
@@ -88,14 +119,13 @@ export function ensureDemoUsers() {
     return;
   }
 
-  // Migrate any old @homesync.demo emails
+  // Migrate any old @homesync.demo emails to @sevasetu.demo
   users.forEach((u) => {
     if (u.email && u.email.includes("@homesync.demo")) {
       u.email = u.email.replace("@homesync.demo", "@sevasetu.demo");
       updated = true;
     }
   });
-
   workers.forEach((w) => {
     if (w.email && w.email.includes("@homesync.demo")) {
       w.email = w.email.replace("@homesync.demo", "@sevasetu.demo");
@@ -103,21 +133,26 @@ export function ensureDemoUsers() {
     }
   });
 
-  const hasCust = users.some((u) => u.role === "customer" || (u.email && u.email.includes("customer")));
-  if (!hasCust) {
-    users.push({ id: uid("cust"), role: "customer", name: "Demo Customer", email: "customer@sevasetu.demo", password: "demo1234", phone: "9800000001", createdAt: Date.now() });
-    updated = true;
-  }
+  // Ensure standard demo accounts exist and have password demo1234
+  ["customer", "worker", "admin"].forEach((role) => {
+    const demo = DEMO_ACCOUNTS[role];
+    const idx = users.findIndex((u) => (u.email && u.email.toLowerCase() === demo.email) || u.id === demo.id);
+    if (idx >= 0) {
+      if (users[idx].password !== "demo1234" || users[idx].role !== role) {
+        users[idx].password = "demo1234";
+        users[idx].role = role;
+        updated = true;
+      }
+    } else {
+      users.push({ ...demo });
+      updated = true;
+    }
+  });
 
-  const hasAdmin = users.some((u) => u.role === "admin" || (u.email && u.email.includes("admin")));
-  if (!hasAdmin) {
-    users.push({ id: uid("adm"), role: "admin", name: "Cooperative Admin", email: "admin@sevasetu.demo", password: "demo1234", phone: "9800000002", createdAt: Date.now() });
-    updated = true;
-  }
-
-  const hasWorker = users.some((u) => u.role === "worker" || (u.email && u.email.includes("worker")));
-  if (!hasWorker) {
-    users.push({ id: uid("wuser"), role: "worker", name: "Ramen Das", email: "worker1@sevasetu.demo", password: "demo1234", phone: "9800000003", createdAt: Date.now() });
+  // Ensure worker1 in WORKERS table links to the demo worker user
+  const w1 = workers.find((w) => w.email && w.email.toLowerCase() === DEMO_ACCOUNTS.worker.email);
+  if (w1 && w1.userId !== DEMO_ACCOUNTS.worker.id) {
+    w1.userId = DEMO_ACCOUNTS.worker.id;
     updated = true;
   }
 
@@ -133,19 +168,23 @@ export function findUserByEmail(email) {
   ensureDemoUsers();
   const users = read(KEYS.USERS, []);
 
-  // 1. Direct match
+  // 1. Direct email match
   let user = users.find((u) => u.email && u.email.trim().toLowerCase() === clean);
   if (user) return user;
 
-  // 2. Domain aliases (@homesync.demo <-> @sevasetu.demo)
+  // 2. Domain alias match (@homesync.demo <-> @sevasetu.demo)
   const alt = clean.includes("@homesync.demo")
     ? clean.replace("@homesync.demo", "@sevasetu.demo")
     : clean.replace("@sevasetu.demo", "@homesync.demo");
   user = users.find((u) => u.email && u.email.trim().toLowerCase() === alt);
   if (user) return user;
 
-  // 3. Prefix match for demo shortcuts
+  // 3. Demo shortcut handles (e.g. "customer", "worker", "worker1", "admin")
   const prefix = clean.split("@")[0];
+  if (prefix === "customer" || prefix === "cust") return DEMO_ACCOUNTS.customer;
+  if (prefix === "worker" || prefix === "worker1" || prefix === "w1") return DEMO_ACCOUNTS.worker;
+  if (prefix === "admin" || prefix === "adm") return DEMO_ACCOUNTS.admin;
+
   user = users.find((u) => {
     const ue = (u.email || "").trim().toLowerCase();
     return ue.split("@")[0] === prefix;
@@ -215,6 +254,27 @@ export function login(email, password, expectedRole) {
   const cleanPass = password.trim();
 
   ensureDemoUsers();
+
+  // Instant demo account authentication guarantee
+  if (cleanPass === "demo1234") {
+    const low = cleanEmail.toLowerCase();
+    if (low.includes("cust")) {
+      const u = DEMO_ACCOUNTS.customer;
+      setSession({ userId: u.id, role: "customer", name: u.name, email: u.email });
+      return { success: true, user: u };
+    }
+    if (low.includes("work")) {
+      const u = DEMO_ACCOUNTS.worker;
+      setSession({ userId: u.id, role: "worker", name: u.name, email: u.email });
+      return { success: true, user: u };
+    }
+    if (low.includes("adm")) {
+      const u = DEMO_ACCOUNTS.admin;
+      setSession({ userId: u.id, role: "admin", name: u.name, email: u.email });
+      return { success: true, user: u };
+    }
+  }
+
   const user = findUserByEmail(cleanEmail);
 
   if (!user || user.password !== cleanPass) {
@@ -231,16 +291,27 @@ export function login(email, password, expectedRole) {
 
 export function currentUser() {
   const s = getSession();
-  if (!s) return null;
+  if (!s || !s.userId) return null;
+  ensureDemoUsers();
   const users = read(KEYS.USERS, []);
-  return users.find((u) => u.id === s.userId) || null;
+  let u = users.find((u) => u.id === s.userId);
+  if (!u && s.email) u = users.find((u) => u.email && u.email.toLowerCase() === s.email.toLowerCase());
+  if (!u && s.role && DEMO_ACCOUNTS[s.role]) u = DEMO_ACCOUNTS[s.role];
+  return u || null;
 }
 
 export function currentWorkerProfile() {
   const u = currentUser();
   if (!u || u.role !== "worker") return null;
+  ensureDemoUsers();
   const workers = read(KEYS.WORKERS, []);
-  return workers.find((w) => w.userId === u.id) || null;
+  if (!workers.length) {
+    seedDemoData(true);
+    return read(KEYS.WORKERS, [])[0] || null;
+  }
+  let w = workers.find((w) => w.userId === u.id || (w.email && u.email && w.email.toLowerCase() === u.email.toLowerCase()));
+  if (!w) w = workers[0];
+  return w || null;
 }
 
 export function requireAuth(role) {
