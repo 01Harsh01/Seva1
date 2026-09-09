@@ -21,18 +21,55 @@ const NAV = {
     ["worker-dashboard.html#welfare", "nav_welfare"],
   ],
   admin: [
-    ["admin-dashboard.html", "nav_dashboard"], ["admin-dashboard.html#workers", "nav_workers"],
+    ["admin-dashboard.html", "nav_dashboard"],
+    ["admin-dashboard.html#workers", "nav_workers"],
     ["admin-dashboard.html#verification", "nav_verification"],
     ["admin-dashboard.html#forecast", "nav_forecast"],
     ["admin-dashboard.html#analytics", "nav_analytics"],
   ],
 };
 
+export function syncNavActiveState() {
+  const currentPage = (location.pathname.split("/").pop() || "index.html").split("?")[0];
+  const currentHash = (location.hash || "").replace("#", "").trim();
+
+  document.querySelectorAll(".hs-nav a").forEach((a) => {
+    const href = a.getAttribute("href") || "";
+    const [linkPage, linkHash] = href.split("#");
+    const isSamePage = linkPage === currentPage || (!linkPage && currentPage === "index.html");
+    let active = false;
+    if (linkHash) {
+      active = isSamePage && linkHash === currentHash;
+    } else {
+      active = isSamePage && !currentHash;
+    }
+    a.classList.toggle("active", active);
+  });
+}
+
+export function activateTabFromHash() {
+  const hash = (location.hash || "").replace("#", "").trim();
+  if (!hash) return;
+
+  const tabBtn = document.querySelector(`.tab-btn[data-tab="${hash}"]`) ||
+                 document.querySelector(`[data-tab="${hash}"]`);
+  if (tabBtn) {
+    tabBtn.click();
+    const panel = document.getElementById(`tab-${hash}`) || tabBtn;
+    setTimeout(() => {
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 60);
+  }
+  syncNavActiveState();
+}
+
 export function renderHeader(mountSelector = "#hs-header") {
   const mount = document.querySelector(mountSelector);
   if (!mount) return;
   const user = currentUser();
   const links = user ? NAV[user.role] || [] : [["index.html", "nav_home"], ["marketplace.html", "nav_services"]];
+  const currentPage = (location.pathname.split("/").pop() || "index.html").split("?")[0];
+  const currentHash = (location.hash || "").replace("#", "").trim();
 
   mount.innerHTML = `
     <header class="hs-header">
@@ -42,8 +79,9 @@ export function renderHeader(mountSelector = "#hs-header") {
         </a>
         <nav class="hs-nav">
           ${links.map(([href, key]) => {
-            const page = href.split("#")[0];
-            const isActive = page === location.pathname.split("/").pop();
+            const [linkPage, linkHash] = href.split("#");
+            const isSamePage = linkPage === currentPage || (!linkPage && currentPage === "index.html");
+            const isActive = linkHash ? (isSamePage && linkHash === currentHash) : (isSamePage && !currentHash);
             return `<a href="${href}" data-i18n="${key}" class="${isActive ? "active" : ""}"></a>`;
           }).join("")}
         </nav>
@@ -61,6 +99,31 @@ export function renderHeader(mountSelector = "#hs-header") {
       </div>
     </header>`;
 
+  mount.querySelector(".hs-nav")?.addEventListener("click", (e) => {
+    const a = e.target.closest("a");
+    if (!a) return;
+    const href = a.getAttribute("href");
+    if (!href) return;
+    const [linkPage, linkHash] = href.split("#");
+    const isSamePage = linkPage === currentPage || !linkPage;
+
+    if (isSamePage) {
+      e.preventDefault();
+      if (linkHash) {
+        if (location.hash !== "#" + linkHash) {
+          location.hash = linkHash;
+        }
+        activateTabFromHash();
+      } else {
+        history.pushState(null, "", linkPage);
+        const firstTab = document.querySelector(".tab-btn");
+        if (firstTab) firstTab.click();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        syncNavActiveState();
+      }
+    }
+  });
+
   document.getElementById("hs-logout")?.addEventListener("click", () => {
     logout();
     location.href = "index.html";
@@ -76,7 +139,13 @@ export function renderHeader(mountSelector = "#hs-header") {
   }
 
   import("./i18n.js").then((m) => m.initLangSwitcher());
+  setTimeout(() => activateTabFromHash(), 80);
 }
+
+window.addEventListener("hashchange", () => {
+  activateTabFromHash();
+  syncNavActiveState();
+});
 
 export function money(n) {
   return "₹" + Math.round(n).toLocaleString("en-IN");
