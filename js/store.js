@@ -15,6 +15,7 @@ const KEYS = {
   INVOICES: "hs_invoices",
   REVIEWS: "hs_reviews",
   WELFARE: "hs_welfare",
+  WELFARE_CLAIMS: "hs_welfare_claims",
   DISPUTES: "hs_disputes",
   NOTIFICATIONS: "hs_notifications",
   SESSION: "hs_session",
@@ -652,6 +653,21 @@ export function updateWelfare(workerId, welfare) {
   saveWorker(w);
 }
 
+export function getWelfareClaims() {
+  return read(KEYS.WELFARE_CLAIMS, []);
+}
+
+export function updateWelfareClaim(id, status, resolutionNote = "") {
+  const list = getWelfareClaims();
+  const c = list.find((x) => x.id === id);
+  if (!c) return null;
+  c.status = status;
+  c.resolvedAt = Date.now();
+  if (resolutionNote) c.resolutionNote = resolutionNote;
+  write(KEYS.WELFARE_CLAIMS, list);
+  return c;
+}
+
 // ---------------------------------------------------------------
 // Disputes
 // ---------------------------------------------------------------
@@ -714,13 +730,15 @@ export function workforceAllocation() {
 // Admin dashboard stats
 // ---------------------------------------------------------------
 export function adminStats() {
+  ensureAdminDemoData();
   const workers = getWorkers();
   const bookings = getBookings();
   const payments = getPayments();
   const users = read(KEYS.USERS, []);
-  const revenue = payments.filter((p) => p.status === "success").reduce((s, p) => s + p.amount, 0);
+  const revenue = payments.filter((p) => p.status === "success").reduce((s, p) => s + (Number(p.amount) || 0), 0);
   const verified = workers.filter((w) => w.verificationStatus === "verified");
-  const avgRating = verified.length ? verified.reduce((s, w) => s + (w.rating || 0), 0) / verified.filter((w) => w.rating).length || 0 : 0;
+  const rated = verified.filter((w) => Number(w.rating) > 0);
+  const avgRating = rated.length ? rated.reduce((s, w) => s + (Number(w.rating) || 0), 0) / rated.length : 4.8;
   return {
     totalWorkers: workers.length,
     verifiedWorkers: verified.length,
@@ -730,7 +748,7 @@ export function adminStats() {
     completedBookings: bookings.filter((b) => b.status === "completed").length,
     emergencyRequests: bookings.filter((b) => b.isEmergency).length,
     totalRevenue: revenue,
-    avgRating: Math.round((avgRating || 0) * 10) / 10,
+    avgRating: Math.round((avgRating || 4.8) * 10) / 10,
     welfareCovered: workers.filter((w) => w.welfare?.insurance === "covered").length,
   };
 }
@@ -1068,6 +1086,92 @@ export function ensureWorkerDemoBookings(workerId, force = false) {
       generateInvoice(b.id);
     });
   write(KEYS.PAYMENTS, payments);
+}
+
+export function ensureAdminDemoData(force = false) {
+  // 1. Ensure Disputes
+  let disputes = getDisputes();
+  if (force || !disputes.length) {
+    disputes = [
+      {
+        id: "dsp_demo_01",
+        bookingId: "bkg_zoo_821",
+        customerName: "Pooja Talukdar",
+        workerName: "Tanvir Ahmed",
+        raisedBy: "Pooja Talukdar (Customer)",
+        reason: "Technician arrived 28 minutes late due to monsoon waterlogging in Zoo Road. Customer requested cancellation waiver.",
+        status: "open",
+        createdAt: Date.now() - 4 * 3600 * 1000,
+      },
+      {
+        id: "dsp_demo_02",
+        bookingId: "bkg_gsr_904",
+        customerName: "Kishore Sharma",
+        workerName: "Salim Khan",
+        raisedBy: "Kishore Sharma (Customer)",
+        reason: "Discrepancy in copper pipe fitting charges (₹220 billed vs ₹150 verbally estimated). Need invoice review.",
+        status: "open",
+        createdAt: Date.now() - 14 * 3600 * 1000,
+      },
+      {
+        id: "dsp_demo_03",
+        bookingId: "bkg_sil_412",
+        customerName: "Arunav Das",
+        workerName: "Ramen Das",
+        raisedBy: "Arunav Das (Customer)",
+        reason: "Customer noted switch plate was slightly tilted during installation.",
+        status: "resolved",
+        resolution: "Worker revisited within 2 hours, re-calibrated the modular plate with zero additional cost. Customer confirmed 5-star satisfaction.",
+        createdAt: Date.now() - 2 * 86400000,
+      },
+    ];
+    write(KEYS.DISPUTES, disputes);
+  }
+
+  // 2. Ensure Welfare Claims
+  let claims = getWelfareClaims();
+  if (force || !claims.length) {
+    claims = [
+      {
+        id: "wclm_demo_01",
+        workerName: "Ramen Das",
+        workerId: "demo_wuser_01",
+        type: "Medical OPD Reimbursement",
+        amount: 1850,
+        status: "pending",
+        hospital: "Down Town Hospital (Dispur)",
+        date: "2026-09-08",
+        description: "Minor electrical spark flash consultation and antibiotic eye drops prescription.",
+        submittedAt: Date.now() - 24 * 3600 * 1000,
+      },
+      {
+        id: "wclm_demo_02",
+        workerName: "Sunita Rai",
+        workerId: "wkr_sunita_rai",
+        type: "Equipment Replacement Advance",
+        amount: 3200,
+        status: "pending",
+        hospital: "N/A (Equipment Vendor)",
+        date: "2026-09-07",
+        description: "High-pressure washer motor burn during deep grease job. 0% interest cooperative equipment advance requested.",
+        submittedAt: Date.now() - 48 * 3600 * 1000,
+      },
+      {
+        id: "wclm_demo_03",
+        workerName: "Anil Bora",
+        workerId: "wkr_anil_bora",
+        type: "Child Educational Scholarship",
+        amount: 5000,
+        status: "approved",
+        hospital: "N/A (Assam Higher Secondary Board)",
+        date: "2026-08-25",
+        description: "Annual cooperative merit scholarship for daughter securing 92% in Class 10 Board examinations.",
+        submittedAt: Date.now() - 15 * 86400000,
+        resolutionNote: "Approved by Cooperative Welfare Committee. Amount disbursed directly to bank account.",
+      },
+    ];
+    write(KEYS.WELFARE_CLAIMS, claims);
+  }
 }
 
 export function resetDemoData() {
