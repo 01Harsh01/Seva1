@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Find a Service — HomeSync</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="marketplace.css" />
+</head>
+<body>
+<div id="hs-header"></div>
+
+<div class="container section">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1 style="font-weight:800;margin-bottom:6px">Find a Service</h1>
+      <p style="color:var(--muted)">Search verified workers near you, ranked by skill match, distance, and rating.</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:0.8rem;color:var(--muted);font-weight:500">Categories</span>
+      <button class="carousel-arrow" id="cat-prev" title="Scroll left" aria-label="Previous categories">‹</button>
+      <button class="carousel-arrow" id="cat-next" title="Scroll right" aria-label="Next categories">›</button>
+    </div>
+  </div>
+
+  <div class="cat-showcase-wrap">
+    <div class="cat-showcase-track" id="browse-switcher"></div>
+  </div>
+
+  <div class="filters-bar">
+    <input type="text" id="f-search" placeholder="Search workers or skills…" style="flex:1;min-width:180px" />
+    <select id="f-category"><option value="">All categories</option></select>
+    <select id="f-rating">
+      <option value="0">Any rating</option>
+      <option value="3">3★ & up</option>
+      <option value="4">4★ & up</option>
+      <option value="4.5">4.5★ & up</option>
+    </select>
+    <select id="f-price">
+      <option value="">Any price</option>
+      <option value="400">Under ₹400</option>
+      <option value="700">Under ₹700</option>
+      <option value="1000">Under ₹1000</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem"><input type="checkbox" id="f-available" /> Available now</label>
+    <button class="btn btn-ghost btn-sm" id="f-locate">📍 Use my location</button>
+    <a class="btn btn-ghost btn-sm" href="map.html">View map</a>
+  </div>
+
+  <p id="loc-status" style="font-size:0.8rem;color:var(--muted);margin-bottom:16px"></p>
+  <div id="results-heading" style="font-weight:700;margin-bottom:12px"></div>
+  <div class="grid grid-3" id="results"></div>
+</div>
+
+<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+
+<script type="module">
+import "./js/ui.js";
+import { CATEGORIES, findMatches } from "./js/store.js";
+import { getActiveCategoryConfigs, getCategoryConfig } from "./js/categoryConfig.js";
+import { money, stars, verificationBadge, qs } from "./js/ui.js";
+
+const catSel = document.getElementById("f-category");
+catSel.innerHTML += CATEGORIES.map(c => `<option value="${c.id}">${c.icon} ${c.label}</option>`).join("");
+if (qs("category")) catSel.value = qs("category");
+
+const switcher = document.getElementById("browse-switcher");
+const configs = getActiveCategoryConfigs();
+
+function renderCategoryCards() {
+  const currentCat = catSel.value;
+  switcher.innerHTML = `
+    <div class="cat-photo-card ${!currentCat ? 'selected' : ''}" data-cat="" role="button" tabindex="0">
+      <div class="cat-photo-img-wrap" style="background:linear-gradient(135deg,var(--coop-teal-dark),#0D9488);display:flex;align-items:center;justify-content:center">
+        <div style="font-size:2.4rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.2))">✨</div>
+        <span class="cat-photo-badge">🌐 All Services</span>
+        <span class="cat-photo-price">${configs.length} categories</span>
+      </div>
+      <div class="cat-photo-content">
+        <div class="cat-photo-tagline">Browse all verified cooperative workers in one unified view.</div>
+        <div class="cat-photo-footer">
+          <button type="button" class="cat-photo-filter-btn">Show All</button>
+          <span style="font-size:0.74rem;color:var(--muted)">${findMatches({verifiedOnly:true}).length} workers</span>
+        </div>
+      </div>
+    </div>
+  ` + configs.map(c => `
+    <div class="cat-photo-card ${currentCat === c.id ? 'selected' : ''}" data-cat="${c.id}" role="button" tabindex="0">
+      <div class="cat-photo-img-wrap">
+        <img src="${c.image || 'images/categories/' + c.id + '.jpg'}" alt="${c.label}" class="cat-photo-img" loading="lazy" onerror="this.src='images/categories/${c.id}.jpg'" />
+        <span class="cat-photo-badge">${c.icon} ${c.label}</span>
+        <span class="cat-photo-price">From ₹${c.rateMin}</span>
+      </div>
+      <div class="cat-photo-content">
+        <div class="cat-photo-tagline">${c.tagline}</div>
+        <div class="cat-photo-footer">
+          <button type="button" class="cat-photo-filter-btn" data-cat="${c.id}">${currentCat === c.id ? 'Active' : 'Filter'}</button>
+          <a href="category.html?category=${c.id}" class="cat-photo-link" title="Open ${c.label} page">Page →</a>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  switcher.querySelectorAll(".cat-photo-card").forEach(card => {
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".cat-photo-link")) return; // let page link click through
+      const cat = card.getAttribute("data-cat");
+      catSel.value = cat;
+      renderCategoryCards();
+      render();
+    });
+  });
+}
+
+renderCategoryCards();
+
+// Carousel arrow scrolling
+document.getElementById("cat-prev")?.addEventListener("click", () => {
+  switcher.scrollBy({ left: -260, behavior: "smooth" });
+});
+document.getElementById("cat-next")?.addEventListener("click", () => {
+  switcher.scrollBy({ left: 260, behavior: "smooth" });
+});
+
+let userLoc = null;
+
+function render() {
+  const category = catSel.value || null;
+  const minRating = Number(document.getElementById("f-rating").value);
+  const maxPrice = Number(document.getElementById("f-price").value) || null;
+  const availableOnly = document.getElementById("f-available").checked;
+  const search = document.getElementById("f-search").value.trim().toLowerCase();
+
+  let list = findMatches({
+    category, lat: userLoc?.lat, lng: userLoc?.lng, minRating, maxPrice, availableOnly, verifiedOnly: true,
+  });
+  if (search) {
+    list = list.filter(w => w.name.toLowerCase().includes(search) || w.skills.some(s => s.toLowerCase().includes(search)));
+  }
+
+  const heading = document.getElementById("results-heading");
+  heading.textContent = userLoc ? `Best Matches Near You (${list.length})` : `Verified Workers (${list.length})`;
+
+  const results = document.getElementById("results");
+  if (list.length === 0) {
+    results.innerHTML = `<div class="empty-state" style="grid-column:1/-1">No verified workers match these filters yet. Try widening your search.</div>`;
+    return;
+  }
+  results.innerHTML = list.map(w => {
+    const cat = CATEGORIES.find(c => c.id === w.category);
+    return `
+    <a class="card worker-card" href="worker-profile.html?id=${w.id}">
+      <div class="worker-card-top">
+        <div class="avatar" style="--avatar-color:${getCategoryConfig(w.category)?.theme.accent || "var(--coop-teal)"}">${w.name.split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
+        <div>
+          <div class="worker-name">${w.name}</div>
+          <div class="worker-meta">${cat?.icon || ""} ${cat?.label || w.category} · ${w.experience} yrs exp</div>
+        </div>
+      </div>
+      <div>${verificationBadge(w.verificationStatus)} ${w.availability === "available" ? '<span class="badge badge-success">Available</span>' : '<span class="badge badge-muted">Busy</span>'}</div>
+      <div class="worker-stats">
+        <span>${stars(w.rating)} <b>${w.rating || "New"}</b> (${w.ratingCount})</span>
+        <span><b>${w.completedJobs}</b> jobs done</span>
+        ${w.distanceKm !== null ? `<span><b>${w.distanceKm.toFixed(1)} km</b> away</span>` : ""}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span style="font-weight:700">${money(w.expectedRate)}</span>
+        ${userLoc ? `<span class="match-score">${w.matchScore}% match</span>` : ""}
+      </div>
+      <span class="btn btn-primary btn-sm btn-block" style="margin-top:4px" data-i18n="btn_book_now"></span>
+    </a>`;
+  }).join("");
+  import("./js/i18n.js").then(m => m.applyTranslations());
+}
+
+document.getElementById("f-locate").addEventListener("click", () => {
+  const status = document.getElementById("loc-status");
+  if (!navigator.geolocation) { status.textContent = "Geolocation isn't supported in this browser."; return; }
+  status.textContent = "Locating…";
+  navigator.geolocation.getCurrentPosition(
+    (pos) => { userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; status.textContent = "Showing workers ranked by distance from your location."; render(); },
+    () => { status.textContent = "Location permission denied — showing all verified workers instead."; render(); }
+  );
+});
+
+[catSel, document.getElementById("f-rating"), document.getElementById("f-price"), document.getElementById("f-available")]
+  .forEach(el => el.addEventListener("change", () => {
+    renderCategoryCards();
+    render();
+  }));
+document.getElementById("f-search").addEventListener("input", render);
+
+render();
+</script>
+</body>
+</html>

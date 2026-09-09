@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Map — HomeSync</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="marketplace.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>#map { height: 68vh; border-radius: 16px; border: 1px solid var(--border); }</style>
+</head>
+<body>
+<div id="hs-header"></div>
+<div class="container section">
+  <h1 style="font-weight:800;margin-bottom:12px">Nearby Service Providers</h1>
+  <div class="filters-bar">
+    <select id="m-category"><option value="">All categories</option></select>
+    <span style="color:var(--muted);font-size:0.8rem">Only verified workers are shown. Exact home addresses are never displayed — markers show approximate service area only.</span>
+  </div>
+  <div id="map"></div>
+</div>
+<div class="footer"><div class="container">HomeSync — Cooperative-owned Digital Service Marketplace</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module">
+import "./js/ui.js";
+import { CATEGORIES, findMatches } from "./js/store.js";
+import { getCategoryConfig } from "./js/categoryConfig.js";
+import { applyCategoryTheme, resetCategoryTheme } from "./js/theme.js";
+import { money, stars, qs } from "./js/ui.js";
+
+const catSel = document.getElementById("m-category");
+catSel.innerHTML += CATEGORIES.map(c => `<option value="${c.id}">${c.icon} ${c.label}</option>`).join("");
+if (qs("category")) catSel.value = qs("category");
+if (qs("category")) applyCategoryTheme(getCategoryConfig(qs("category")).theme);
+catSel.addEventListener("change", () => applyCategoryTheme(catSel.value ? getCategoryConfig(catSel.value).theme : null));
+window.addEventListener("beforeunload", resetCategoryTheme);
+
+const map = L.map("map").setView([26.1445, 91.7362], 12);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 18,
+}).addTo(map);
+
+let markers = [];
+function render() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  const workers = findMatches({ category: catSel.value || null, verifiedOnly: true });
+  workers.forEach(w => {
+    if (!w.lat || !w.lng) return;
+    const marker = L.marker([w.lat, w.lng]).addTo(map);
+    marker.bindPopup(`
+      <b>${w.name}</b><br/>
+      ${CATEGORIES.find(c=>c.id===w.category)?.label || w.category}<br/>
+      ${stars(w.rating)} ${w.rating || "New"}<br/>
+      ${money(w.expectedRate)}<br/>
+      <a href="worker-profile.html?id=${w.id}">View & Book</a>
+    `);
+    markers.push(marker);
+  });
+}
+catSel.addEventListener("change", render);
+render();
+</script>
+</body>
+</html>
