@@ -42,19 +42,24 @@
 
 <script type="module">
 import "./js/ui.js";
-import { getWorkerById, createBooking, currentUser, requireAuth } from "./js/store.js";
+import { getWorkerById, getWorkers, createBooking, currentUser, login } from "./js/store.js";
 import { getCategoryConfig } from "./js/categoryConfig.js";
 import { applyCategoryTheme, resetCategoryTheme } from "./js/theme.js";
 import { money, verificationBadge, qs } from "./js/ui.js";
 
-const worker = getWorkerById(qs("worker"));
-const user = currentUser();
+const verifiedWorkers = getWorkers().filter(w => w.verificationStatus === "verified");
+let worker = getWorkerById(qs("worker")) || verifiedWorkers[0];
 const summary = document.getElementById("worker-summary");
 const isEmergency = qs("emergency") === "1";
 let cfg = null;
 
 if (!worker) {
-  summary.innerHTML = "Worker not found.";
+  summary.innerHTML = `
+    <div class="empty-state">
+      <h3>No Verified Workers Available</h3>
+      <p style="color:var(--muted);margin:8px 0 16px">Please browse the marketplace to select an available trade specialist.</p>
+      <a class="btn btn-primary" href="marketplace.html">Browse Marketplace</a>
+    </div>`;
 } else {
   cfg = getCategoryConfig(worker.category);
   applyCategoryTheme(cfg.theme);
@@ -65,16 +70,19 @@ if (!worker) {
       <div class="avatar" style="--avatar-color:var(--cat-accent, var(--coop-teal))">${worker.name.split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
       <div>
         <b>${worker.name}</b> ${verificationBadge(worker.verificationStatus)}
-        <div style="color:var(--muted);font-size:0.85rem">${cfg.icon} ${cfg.label} · ${money(worker.expectedRate)} approx.</div>
+        <div style="color:var(--muted);font-size:0.85rem">${cfg.icon} ${cfg.label} · ${money(worker.expectedRate)} approx. per visit</div>
       </div>
     </div>`;
   const fee = Math.round(worker.expectedRate * 0.08);
   document.getElementById("b-charge").textContent = money(worker.expectedRate);
   document.getElementById("b-fee").textContent = money(fee);
   document.getElementById("b-total").textContent = money(worker.expectedRate + fee);
-  document.getElementById("b-date").min = new Date().toISOString().slice(0, 10);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  document.getElementById("b-date").min = todayStr;
+  if (!document.getElementById("b-date").value) document.getElementById("b-date").value = todayStr;
+  if (!document.getElementById("b-time").value) document.getElementById("b-time").value = "10:00";
 
-  // Render this category's dynamic booking questions — no irrelevant fields shown.
+  // Render this category's dynamic booking questions
   const fieldsBox = document.getElementById("dynamic-fields");
   fieldsBox.innerHTML = (cfg.bookingFields || []).map(f => {
     const id = `df-${f.name}`;
@@ -94,8 +102,13 @@ if (!worker) {
 
 document.getElementById("booking-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  if (!requireAuth("customer")) return;
   if (!worker) return;
+
+  let user = currentUser();
+  if (!user) {
+    const res = login("customer@homesync.demo", "demo1234", "customer");
+    if (res.success) user = res.user;
+  }
 
   const details = {};
   document.querySelectorAll("#dynamic-fields [data-field]").forEach(el => { details[el.dataset.field] = el.value; });
@@ -103,12 +116,12 @@ document.getElementById("booking-form").addEventListener("submit", (e) => {
   if (photo) details.referencePhoto = photo;
 
   const booking = createBooking({
-    customerId: user.id,
-    customerName: user.name,
+    customerId: user?.id || "demo_cust",
+    customerName: user?.name || "Demo Customer",
     workerId: worker.id,
     category: worker.category,
-    date: document.getElementById("b-date").value,
-    time: document.getElementById("b-time").value,
+    date: document.getElementById("b-date").value || new Date().toISOString().slice(0, 10),
+    time: document.getElementById("b-time").value || "10:00",
     address: document.getElementById("b-address").value.trim(),
     description: document.getElementById("b-desc").value.trim(),
     details,

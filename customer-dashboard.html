@@ -41,19 +41,39 @@
 
 <script type="module">
 import "./js/ui.js";
-import { requireAuth, currentUser, getBookingsForCustomer, addReview, fileDispute, getPayments, updateBookingStatus } from "./js/store.js";
+import { currentUser, getBookingsForCustomer, addReview, fileDispute, getPayments, updateBookingStatus, login } from "./js/store.js";
 import { money, badge } from "./js/ui.js";
 
-if (!requireAuth("customer")) throw new Error("redirecting");
-const user = currentUser();
+let user = currentUser();
+if (!user || user.role !== "customer") {
+  const res = login("customer@homesync.demo", "demo1234", "customer");
+  if (res.success) {
+    user = res.user;
+  }
+}
 
-document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
-}));
-if (location.hash === "#payments") document.querySelector('[data-tab="payments"]').click();
+if (!user) {
+  document.querySelector(".container.section").innerHTML = `
+    <div class="card" style="max-width:500px;margin:40px auto;text-align:center;padding:36px 20px">
+      <h2 style="margin-bottom:12px">Sign In to View Bookings</h2>
+      <p style="color:var(--muted);margin-bottom:20px">Please log in to manage your bookings, invoices, and service ratings.</p>
+      <a class="btn btn-primary btn-block" href="login.html">Log In</a>
+    </div>`;
+} else {
+  initDashboard();
+}
+
+function initDashboard() {
+  document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+  }));
+  if (location.hash === "#payments") document.querySelector('[data-tab="payments"]')?.click();
+
+  renderAll();
+}
 
 const statusTone = { requested: "warn", accepted: "info", scheduled: "info", in_progress: "info", completed: "success", rejected: "danger", cancelled: "muted" };
 

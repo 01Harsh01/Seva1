@@ -14,33 +14,118 @@
 
 <section class="hero-3d">
   <div class="hero-3d-bg-blobs">
-    <div class="hero-3d-blob" style="width:420px;height:420px;top:-80px;left:10%;background:var(--coop-teal)"></div>
-    <div class="hero-3d-blob" style="width:340px;height:340px;bottom:-60px;right:8%;background:var(--coop-amber);animation-delay:-6s"></div>
+    <div class="hero-3d-blob" style="width:420px;height:420px;top:-80px;left:5%;background:var(--coop-teal)"></div>
+    <div class="hero-3d-blob" style="width:340px;height:340px;bottom:-60px;right:5%;background:var(--coop-amber);animation-delay:-6s"></div>
   </div>
   <div class="hero-3d-canvas" id="hero-canvas" aria-hidden="true"></div>
+  
   <div class="container hero-3d-content">
-    <span class="hero-badge glass-card" style="background:rgba(15,118,110,0.12);color:var(--coop-teal-dark);border-color:transparent">🤝 Cooperative-owned, not gig-owned</span>
-    <h1 data-i18n="hero_title"></h1>
-    <p class="hero-lede" data-i18n="hero_sub"></p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="marketplace.html" data-i18n="btn_find_service"></a>
-      <a class="btn glass-btn" href="register.html?as=worker" data-i18n="btn_join_worker"></a>
-      <a class="btn btn-amber" href="emergency.html" data-i18n="btn_emergency"></a>
+    <div class="hero-grid-2col">
+      <!-- Left Column: High-Impact Typography & Actions -->
+      <div>
+        <span class="hero-badge">🤝 Cooperative-owned · Fair Wages · 100% Verified</span>
+        <h1 data-i18n="hero_title">Trusted Local Services. Fair Work. Stronger Cooperatives.</h1>
+        <p class="hero-lede" data-i18n="hero_sub">Connect with verified skilled workers through a worker-owned cooperative service marketplace.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="marketplace.html" data-i18n="btn_find_service">Find a Service</a>
+          <a class="btn btn-ghost" href="register.html?as=worker" data-i18n="btn_join_worker">Join as a Worker</a>
+          <a class="btn btn-amber" href="emergency.html" data-i18n="btn_emergency">🚨 Emergency Service</a>
+        </div>
+        <div class="hero-stats-strip" id="hero-stats"></div>
+      </div>
+
+      <!-- Right Column: Project-Themed 3D Service Hub Showcase -->
+      <div>
+        <div class="service-hub-card">
+          <!-- Floating Trust Badges -->
+          <div class="hub-floating-badge badge-top-right">
+            <span>🛡️</span> 100% Verified Workers
+          </div>
+          <div class="hub-floating-badge badge-bottom-left">
+            <span>⚡</span> 15-min Emergency Dispatch
+          </div>
+
+          <div class="hub-header">
+            <div class="hub-header-title">
+              <span>🤝</span> HomeSync Cooperative Hub
+            </div>
+            <div class="hub-live-badge">
+              <span class="hub-live-dot"></span> Live in Guwahati
+            </div>
+          </div>
+
+          <div class="hub-services-grid">
+            <a href="category.html?category=electrical" class="hub-service-item">
+              <div class="hub-service-icon" style="color:#B45309">⚡</div>
+              <div class="hub-service-info">
+                <div class="hub-service-name">Electrical</div>
+                <div class="hub-service-sub">Wiring & Safety · From ₹250</div>
+              </div>
+            </a>
+            <a href="category.html?category=plumbing" class="hub-service-item">
+              <div class="hub-service-icon" style="color:#1D4ED8">🔧</div>
+              <div class="hub-service-info">
+                <div class="hub-service-name">Plumbing</div>
+                <div class="hub-service-sub">Leaks & Taps · From ₹300</div>
+              </div>
+            </a>
+            <a href="category.html?category=carpentry" class="hub-service-item">
+              <div class="hub-service-icon" style="color:#92400E">🪚</div>
+              <div class="hub-service-info">
+                <div class="hub-service-name">Carpentry</div>
+                <div class="hub-service-sub">Woodwork · From ₹350</div>
+              </div>
+            </a>
+            <a href="category.html?category=painting" class="hub-service-item">
+              <div class="hub-service-icon" style="color:#BE185D">🎨</div>
+              <div class="hub-service-info">
+                <div class="hub-service-name">Painting</div>
+                <div class="hub-service-sub">Interior & Exterior · From ₹400</div>
+              </div>
+            </a>
+            <a href="category.html?category=cleaning" class="hub-service-item">
+              <div class="hub-service-icon" style="color:#0891B2">🧹</div>
+              <div class="hub-service-info">
+                <div class="hub-service-name">Cleaning</div>
+                <div class="hub-service-sub">Deep Clean · From ₹200</div>
+              </div>
+            </a>
+            <a href="category.html?category=technician" class="hub-service-item">
+              <div class="hub-service-icon" style="color:#0F766E">🛠️</div>
+              <div class="hub-service-info">
+                <div class="hub-service-name">Technician</div>
+                <div class="hub-service-sub">AC & Appliances · From ₹300</div>
+              </div>
+            </a>
+          </div>
+
+          <div class="hub-footer-trust">
+            <span>✓ Fixed Transparent Pricing</span>
+            <span>✓ Cooperative Welfare Fund</span>
+            <span>✓ Digital Invoices</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="hero-stats-strip" id="hero-stats"></div>
   </div>
 </section>
 
 <section class="section">
   <div class="container">
-    <h2 class="section-title" data-i18n="nav_services"></h2>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 class="section-title" style="text-align:left;margin-bottom:4px" data-i18n="nav_services">All Service Categories</h2>
+        <p style="color:var(--muted);font-size:0.92rem">Browse verified trade cooperatives across all disciplines.</p>
+      </div>
+      <a class="btn btn-ghost btn-sm" href="marketplace.html">View Marketplace Filter View →</a>
+    </div>
     <div class="grid grid-4" id="cat-grid"></div>
   </div>
 </section>
 
 <section class="section bg-blobs-wrap why-blobs" style="background:var(--surface2)">
   <div class="container" style="position:relative;z-index:1">
-    <h2 class="section-title" data-i18n="why_title"></h2>
+    <h2 class="section-title" data-i18n="why_title">Why HomeSync?</h2>
     <div class="grid grid-3">
       <div class="card cat-card"><div class="cat-icon">✅</div><b>Verified Workers</b><p style="color:var(--muted);font-size:0.9rem;margin-top:6px">Every worker is screened and their certifications checked before they can accept bookings.</p></div>
       <div class="card cat-card"><div class="cat-icon">💰</div><b>Fair Wages</b><p style="color:var(--muted);font-size:0.9rem;margin-top:6px">Transparent pricing with a clearly disclosed cooperative fee — no hidden charges.</p></div>
@@ -53,11 +138,13 @@
 </section>
 
 <section class="section">
-  <div class="container glass-card" style="text-align:center;padding:48px 24px">
-    <h2 class="section-title">A cooperative, not a gig platform</h2>
+  <div class="container glass-card" style="text-align:center;padding:48px 24px;border:1px solid var(--border);border-radius:20px;background:#fff">
+    <h2 class="section-title" style="margin-bottom:12px">A cooperative, not an extractive gig platform</h2>
     <p style="color:var(--muted);max-width:680px;margin:0 auto 20px">HomeSync is built for Labour Cooperative Federations and Societies — every worker is a verified cooperative member, every fee is disclosed, and welfare coverage is tracked alongside every booking.</p>
-    <a class="btn btn-ghost" href="marketplace.html">Browse the marketplace →</a>
-    <a class="btn btn-ghost" href="features.html" style="margin-left:10px">See all platform capabilities →</a>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="btn btn-primary" href="marketplace.html">Browse the Marketplace →</a>
+      <a class="btn btn-ghost" href="features.html">See all platform capabilities →</a>
+    </div>
   </div>
 </section>
 
@@ -70,7 +157,6 @@ import "./js/ui.js";
 import { getActiveCategoryConfigs } from "./js/categoryConfig.js";
 import { getWorkers } from "./js/store.js";
 import { mountHeroFieldScene } from "./js/scene3d.js";
-import { mascotBadgeHTML } from "./js/mascot.js";
 
 const configs = getActiveCategoryConfigs();
 const grid = document.getElementById("cat-grid");
@@ -106,3 +192,4 @@ document.getElementById("hero-stats").innerHTML = `
 </script>
 </body>
 </html>
+

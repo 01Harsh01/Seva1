@@ -17,12 +17,31 @@
 
 <script type="module">
 import "./js/ui.js";
-import { getBookingById, recordPayment, updateBookingStatus, generateInvoice } from "./js/store.js";
+import { getBookingById, recordPayment, updateBookingStatus, generateInvoice, getBookings, currentUser } from "./js/store.js";
 import { money, qs } from "./js/ui.js";
 
-const booking = getBookingById(qs("booking"));
+let booking = getBookingById(qs("booking"));
+if (!booking) {
+  const user = currentUser();
+  const all = getBookings();
+  if (user) {
+    const userBookings = all.filter(b => b.customerId === user.id);
+    booking = userBookings[userBookings.length - 1] || all[all.length - 1];
+  } else {
+    booking = all[all.length - 1];
+  }
+}
+
 const box = document.getElementById("pay-box");
-if (!booking) { box.innerHTML = "Booking not found."; }
+if (!booking) {
+  box.innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:2.2rem;margin-bottom:8px">💳</div>
+      <h3 style="margin-bottom:8px">No Pending Payment Found</h3>
+      <p style="color:var(--muted);margin-bottom:16px">Book a verified worker from the marketplace to proceed to payment.</p>
+      <a class="btn btn-primary" href="marketplace.html">Find a Service</a>
+    </div>`;
+}
 else {
   const fee = Math.round(booking.serviceCharge * 0.08);
   const total = booking.serviceCharge + fee;

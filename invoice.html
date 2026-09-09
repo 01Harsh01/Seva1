@@ -20,39 +20,59 @@
 
 <script type="module">
 import "./js/ui.js";
-import { getBookingById, getInvoiceForBooking, generateInvoice } from "./js/store.js";
+import { getBookingById, getInvoiceForBooking, generateInvoice, getBookings, currentUser } from "./js/store.js";
 import { money, qs } from "./js/ui.js";
 
-const bookingId = qs("booking");
-const booking = getBookingById(bookingId);
-let invoice = getInvoiceForBooking(bookingId);
+let bookingId = qs("booking");
+let booking = bookingId ? getBookingById(bookingId) : null;
+
+// If no booking ID in URL, default to the user's latest booking or latest system booking
+if (!booking) {
+  const user = currentUser();
+  const allBookings = getBookings();
+  if (user) {
+    const userBookings = allBookings.filter(b => b.customerId === user.id);
+    booking = userBookings[userBookings.length - 1] || allBookings[allBookings.length - 1];
+  } else {
+    booking = allBookings[allBookings.length - 1];
+  }
+  if (booking) bookingId = booking.id;
+}
+
+let invoice = bookingId ? getInvoiceForBooking(bookingId) : null;
 if (!invoice && booking) invoice = generateInvoice(bookingId);
 
 const box = document.getElementById("invoice-box");
 if (!invoice) {
-  box.innerHTML = "<p>Invoice not available yet — it is generated once payment is completed.</p>";
+  box.innerHTML = `
+    <div class="empty-state">
+      <div style="font-size:2rem;margin-bottom:8px">📄</div>
+      <h3>No Invoices Found</h3>
+      <p style="color:var(--muted);margin:8px 0 16px">Invoices are automatically generated once a booking or payment is completed.</p>
+      <a class="btn btn-primary" href="marketplace.html">Find a Service</a>
+    </div>`;
 } else {
   box.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px">
       <div>
-        <h2 style="font-weight:800">HomeSync</h2>
+        <h2 style="font-weight:800;color:var(--coop-teal-dark)">HomeSync Cooperative</h2>
         <p style="color:var(--muted);font-size:0.85rem">${invoice.cooperative}</p>
       </div>
       <div style="text-align:right">
-        <b>Invoice ${invoice.invoiceNumber}</b>
+        <b style="font-size:1.05rem">Invoice ${invoice.invoiceNumber}</b>
         <p style="color:var(--muted);font-size:0.85rem">${invoice.date}</p>
       </div>
     </div>
     <div class="grid grid-2" style="margin-bottom:20px">
-      <div><b>Customer</b><p style="color:var(--muted);font-size:0.9rem">${invoice.customerName}</p></div>
-      <div><b>Worker</b><p style="color:var(--muted);font-size:0.9rem">${invoice.workerName}</p></div>
+      <div class="card" style="background:var(--surface2)"><b>Customer Details</b><p style="color:var(--muted);font-size:0.9rem;margin-top:4px">${invoice.customerName}</p></div>
+      <div class="card" style="background:var(--surface2)"><b>Worker Details</b><p style="color:var(--muted);font-size:0.9rem;margin-top:4px">${invoice.workerName || "Verified Cooperative Worker"}</p></div>
     </div>
     <div class="invoice-row"><span>Service (${invoice.category})</span><span>${money(invoice.labourCharge)}</span></div>
-    <div class="invoice-row"><span>Additional charges</span><span>${money(invoice.additionalCharges)}</span></div>
-    <div class="invoice-row"><span>Cooperative fee (8%)</span><span>${money(invoice.cooperativeFee)}</span></div>
-    <div class="invoice-row invoice-total" style="margin-top:8px"><span>Total</span><span>${money(invoice.total)}</span></div>
-    <div class="invoice-row"><span>Worker earning (after 3% welfare-fund deduction)</span><span>${money(invoice.workerEarning)}</span></div>
-    <div class="invoice-row"><span>Payment status</span><span>${invoice.paymentStatus}</span></div>
+    <div class="invoice-row"><span>Additional charges</span><span>${money(invoice.additionalCharges || 0)}</span></div>
+    <div class="invoice-row"><span>Cooperative fee (8% disclosed fee)</span><span>${money(invoice.cooperativeFee)}</span></div>
+    <div class="invoice-row invoice-total" style="margin-top:12px"><span>Total Amount</span><span>${money(invoice.total)}</span></div>
+    <div class="invoice-row"><span>Worker earning (after 3% welfare deduction)</span><span>${money(invoice.workerEarning)}</span></div>
+    <div class="invoice-row"><span>Payment status</span><span class="badge badge-success">${invoice.paymentStatus.toUpperCase()}</span></div>
     <div class="invoice-row"><span>Transaction ID</span><span>${invoice.transactionId}</span></div>
   `;
 }

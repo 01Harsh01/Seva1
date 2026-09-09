@@ -34,20 +34,39 @@
 
 <script type="module">
 import "./js/ui.js";
-import { requireAuth, currentWorkerProfile, getBookingsForWorker, updateBookingStatus, saveWorker, getCategory, CATEGORIES } from "./js/store.js";
+import { currentWorkerProfile, getBookingsForWorker, updateBookingStatus, saveWorker, getCategory, CATEGORIES, currentUser, login } from "./js/store.js";
 import { money, badge, verificationBadge, stars } from "./js/ui.js";
 
-if (!requireAuth("worker")) throw new Error("redirecting");
-let worker = currentWorkerProfile();
+let user = currentUser();
+if (!user || user.role !== "worker") {
+  const res = login("worker1@homesync.demo", "demo1234", "worker");
+  if (res.success) user = res.user;
+}
 
-document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
-}));
-const hashTab = location.hash.replace("#", "");
-if (hashTab) document.querySelector(`[data-tab="${hashTab}"]`)?.click();
+let worker = currentWorkerProfile();
+if (!worker) {
+  document.querySelector(".container.section").innerHTML = `
+    <div class="card" style="max-width:500px;margin:40px auto;text-align:center;padding:36px 20px">
+      <h2 style="margin-bottom:12px">Worker Sign In Required</h2>
+      <p style="color:var(--muted);margin-bottom:20px">Please log in as a registered cooperative worker to view your job requests and earnings.</p>
+      <a class="btn btn-primary btn-block" href="login.html">Log In as Worker</a>
+    </div>`;
+} else {
+  initWorkerDashboard();
+}
+
+function initWorkerDashboard() {
+  document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+  }));
+  const hashTab = location.hash.replace("#", "");
+  if (hashTab) document.querySelector(`[data-tab="${hashTab}"]`)?.click();
+
+  renderAll();
+}
 
 function renderVerifyBanner() {
   const box = document.getElementById("verify-banner");

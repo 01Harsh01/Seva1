@@ -41,22 +41,42 @@
 <script type="module">
 import "./js/ui.js";
 import {
-  requireAuth, adminStats, getWorkers, setWorkerVerification, getBookings, getPayments,
-  updateWelfare, demandForecast, workforceAllocation, getDisputes, resolveDispute, getCategory
+  adminStats, getWorkers, setWorkerVerification, getBookings, getPayments,
+  updateWelfare, demandForecast, workforceAllocation, getDisputes, resolveDispute, getCategory,
+  currentUser, login
 } from "./js/store.js";
 import { getAllCategoryConfigs, saveCategoryOverride, setCategoryActive, canDeleteCategory } from "./js/categoryConfig.js";
 import { money, badge, verificationBadge, stars } from "./js/ui.js";
 
-if (!requireAuth("admin")) throw new Error("redirecting");
+let user = currentUser();
+if (!user || user.role !== "admin") {
+  const res = login("admin@homesync.demo", "demo1234", "admin");
+  if (res.success) user = res.user;
+}
 
-document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
-}));
-const hashTab = location.hash.replace("#", "");
-if (hashTab) document.querySelector(`[data-tab="${hashTab}"]`)?.click();
+if (!user) {
+  document.querySelector(".container.section").innerHTML = `
+    <div class="card" style="max-width:500px;margin:40px auto;text-align:center;padding:36px 20px">
+      <h2 style="margin-bottom:12px">Cooperative Admin Access</h2>
+      <p style="color:var(--muted);margin-bottom:20px">Please log in with administrator credentials to manage federation operations.</p>
+      <a class="btn btn-primary btn-block" href="login.html">Log In as Admin</a>
+    </div>`;
+} else {
+  initAdminDashboard();
+}
+
+function initAdminDashboard() {
+  document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+  }));
+  const hashTab = location.hash.replace("#", "");
+  if (hashTab) document.querySelector(`[data-tab="${hashTab}"]`)?.click();
+
+  renderAll();
+}
 
 function renderStats() {
   const s = adminStats();

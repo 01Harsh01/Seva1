@@ -15,15 +15,21 @@
 
 <script type="module">
 import "./js/ui.js";
-import { getWorkerById, getCategory, getReviews } from "./js/store.js";
+import { getWorkerById, getWorkers, getCategory, getReviews } from "./js/store.js";
 import { getCategoryConfig } from "./js/categoryConfig.js";
 import { applyCategoryTheme, resetCategoryTheme } from "./js/theme.js";
 import { money, stars, verificationBadge, qs } from "./js/ui.js";
 
-const worker = getWorkerById(qs("id"));
+const verifiedWorkers = getWorkers().filter(w => w.verificationStatus === "verified");
+const worker = getWorkerById(qs("id")) || verifiedWorkers[0];
 const content = document.getElementById("content");
 if (!worker) {
-  content.innerHTML = `<div class="empty-state">Worker not found.</div>`;
+  content.innerHTML = `
+    <div class="empty-state">
+      <h3>No Worker Profile Found</h3>
+      <p style="color:var(--muted);margin:8px 0 16px">Browse available workers in the marketplace.</p>
+      <a class="btn btn-primary" href="marketplace.html">Browse Marketplace</a>
+    </div>`;
 } else {
   const cat = getCategory(worker.category);
   applyCategoryTheme(getCategoryConfig(worker.category).theme);

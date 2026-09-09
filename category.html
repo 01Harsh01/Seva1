@@ -140,8 +140,8 @@ async function loadCategory(id) {
   document.getElementById("workers-title").textContent = `Verified ${cfg.label} Workers`;
   document.getElementById("features-title").textContent = `Why choose HomeSync for ${cfg.label}`;
 
-  // 2. 3D hero backdrop themed to this category
-  mountCategoryScene({ container: document.getElementById("cat-hero-canvas"), shape: cfg.heroShape, color: cfg.theme.accent });
+  // 2. Subtle hero backdrop themed to this category
+  mountCategoryScene({ container: document.getElementById("cat-hero-canvas"), color: cfg.theme.accent });
 
   // 3. Switcher
   renderSwitcher(id);
