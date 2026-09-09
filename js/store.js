@@ -311,6 +311,82 @@ export function currentWorkerProfile() {
   }
   let w = workers.find((w) => w.userId === u.id || (w.email && u.email && w.email.toLowerCase() === u.email.toLowerCase()));
   if (!w) w = workers[0];
+  if (w) {
+    let touched = false;
+    if (!Array.isArray(w.skills)) {
+      const cat = getCategory(w.category);
+      w.skills = cat ? cat.skills.slice(0, 3) : ["General Service"];
+      touched = true;
+    }
+    if (!Array.isArray(w.certifications) || !w.certifications.length) {
+      const cat = getCategory(w.category);
+      w.certifications = [`Certified ${cat ? cat.label : "Trade"} Technician (NSDC Level 4)`];
+      touched = true;
+    }
+    if (!w.welfare || typeof w.welfare !== "object") {
+      w.welfare = {
+        insurance: "covered",
+        scheme: "enrolled",
+        training: ["Electrical Safety & Earthing Protocols 2026", "Customer Etiquette & Fair Wage"],
+        policyNumber: "SEVA-INS-8821",
+        sumInsured: 200000,
+      };
+      touched = true;
+    } else {
+      if (!w.welfare.insurance) { w.welfare.insurance = "covered"; touched = true; }
+      if (!w.welfare.scheme) { w.welfare.scheme = "enrolled"; touched = true; }
+      if (!Array.isArray(w.welfare.training) || !w.welfare.training.length) {
+        w.welfare.training = ["Electrical Safety & Earthing Protocols 2026"];
+        touched = true;
+      }
+      if (!w.welfare.policyNumber) { w.welfare.policyNumber = "SEVA-INS-8821"; touched = true; }
+      if (!w.welfare.sumInsured) { w.welfare.sumInsured = 200000; touched = true; }
+    }
+    if (!Array.isArray(w.shifts) || !w.shifts.length) {
+      w.shifts = ["Morning (8 AM - 1 PM)", "Afternoon (1 PM - 6 PM)"];
+      touched = true;
+    }
+    if (!Array.isArray(w.workingDays) || !w.workingDays.length) {
+      w.workingDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      touched = true;
+    }
+    if (w.emergencyOptIn === undefined) {
+      w.emergencyOptIn = true;
+      touched = true;
+    }
+    if (!w.bankDetails) {
+      w.bankDetails = {
+        account: "9876543210123",
+        ifsc: "SBIN0001234",
+        bank: "State Bank of India (Guwahati)",
+        upi: `${(w.name || "worker").toLowerCase().replace(/\s+/g, "")}@oksbi`,
+      };
+      touched = true;
+    }
+    if (!Array.isArray(w.payouts) || !w.payouts.length) {
+      w.payouts = [
+        { id: "po_1", amount: 2400, date: "2026-09-05", method: "UPI", status: "completed", reference: "UPI/260905/78219" },
+        { id: "po_2", amount: 1850, date: "2026-08-28", method: "Bank Transfer", status: "completed", reference: "NEFT/260828/44120" },
+      ];
+      touched = true;
+    }
+    if (!Array.isArray(w.courses) || !w.courses.length) {
+      w.courses = [
+        { id: "course_1", title: "Electrical Safety & Earthing Protocols 2026", status: "completed", score: "98%", date: "Aug 2026" },
+        { id: "course_2", title: "Customer Etiquette & Fair Wage Ethics", status: "completed", score: "95%", date: "Jul 2026" },
+      ];
+      touched = true;
+    }
+    if (!w.experience) { w.experience = 5; touched = true; }
+    if (!w.rating) { w.rating = 4.9; touched = true; }
+    if (!w.ratingCount) { w.ratingCount = 38; touched = true; }
+    if (!w.completedJobs) { w.completedJobs = 42; touched = true; }
+    if (!w.serviceRadiusKm) { w.serviceRadiusKm = 12; touched = true; }
+    if (!w.expectedRate) { w.expectedRate = 450; touched = true; }
+
+    if (touched) saveWorker(w);
+    ensureWorkerDemoBookings(w.id);
+  }
   return w || null;
 }
 
@@ -449,6 +525,18 @@ export function updateBookingStatus(id, status) {
     if (worker) { worker.availability = "busy"; saveWorker(worker); }
   }
   notify(null, `Booking ${id} status: ${status}`, b.customerId);
+  return b;
+}
+
+export function addBookingAdditionalCharges(id, amount, note = "") {
+  const bookings = getBookings();
+  const b = bookings.find((x) => x.id === id);
+  if (!b) return null;
+  b.additionalCharges = (b.additionalCharges || 0) + Number(amount);
+  if (note) {
+    b.additionalNote = note;
+  }
+  saveBookings(bookings);
   return b;
 }
 
@@ -739,6 +827,247 @@ export function seedDemoData(force = false) {
   write(KEYS.PAYMENTS, payments);
 
   write(KEYS.SEEDED, true);
+}
+
+export function recordWorkerPayout(workerId, { amount, method, account }) {
+  const worker = getWorkerById(workerId);
+  if (!worker) return null;
+  if (!Array.isArray(worker.payouts)) worker.payouts = [];
+  const payout = {
+    id: uid("po"),
+    amount: Number(amount) || 0,
+    method: method || "UPI",
+    account: account || "Default UPI",
+    date: new Date().toISOString().slice(0, 10),
+    timestamp: Date.now(),
+    status: "completed",
+    reference: `SEVA/${Date.now().toString().slice(-6)}/${Math.floor(1000 + Math.random() * 9000)}`,
+  };
+  worker.payouts.unshift(payout);
+  saveWorker(worker);
+  return payout;
+}
+
+export function enrollWorkerCourse(workerId, course) {
+  const worker = getWorkerById(workerId);
+  if (!worker) return null;
+  if (!Array.isArray(worker.courses)) worker.courses = [];
+  const exists = worker.courses.find((c) => c.id === course.id);
+  if (!exists) {
+    worker.courses.push({
+      ...course,
+      enrolledAt: Date.now(),
+      status: "enrolled",
+      progress: "In Progress (Module 1/4)",
+    });
+    if (!worker.welfare) worker.welfare = {};
+    if (!Array.isArray(worker.welfare.training)) worker.welfare.training = [];
+    if (!worker.welfare.training.includes(course.title)) {
+      worker.welfare.training.push(course.title);
+    }
+    saveWorker(worker);
+  }
+  return worker;
+}
+
+export function ensureWorkerDemoBookings(workerId, force = false) {
+  if (!workerId) return;
+  const allBookings = getBookings();
+  const workerBookings = allBookings.filter((b) => b.workerId === workerId);
+  const activeCount = workerBookings.filter((b) => ["requested", "accepted", "in_progress"].includes(b.status)).length;
+
+  if (!force && activeCount >= 2 && workerBookings.length >= 4) {
+    return;
+  }
+
+  const worker = getWorkerById(workerId);
+  const cat = worker?.category || "electrical";
+  const now = Date.now();
+  const DAY = 86400000;
+
+  // Filter out previous demo bookings for this worker if force is requested
+  let remaining = force
+    ? allBookings.filter((b) => b.workerId !== workerId)
+    : allBookings.filter((b) => !b.id.startsWith(`demo_wbkg_${workerId}_`));
+
+  const demoJobs = [
+    {
+      id: `demo_wbkg_${workerId}_01`,
+      customerId: "demo_cust_02",
+      customerName: "Anita Goswami",
+      customerPhone: "+91 98640 12345",
+      workerId,
+      workerName: worker?.name || "Ramen Das",
+      category: cat,
+      date: new Date(now).toISOString().slice(0, 10),
+      time: "3:30 PM",
+      address: "Flat 4B, Silver Heights, Zoo Road, Guwahati",
+      distance: "2.1 km away",
+      description: "Urgent: Short circuit in master bedroom switchboard with sparking observed. Need safety check and repair.",
+      details: { Urgency: "Immediate / Emergency", Room: "Master Bedroom", Issue: "Sparking & Tripping" },
+      paymentMethod: "online",
+      isEmergency: true,
+      status: "requested",
+      serviceCharge: 650,
+      additionalCharges: 0,
+      createdAt: now - 35 * 60 * 1000,
+    },
+    {
+      id: `demo_wbkg_${workerId}_02`,
+      customerId: "demo_cust_03",
+      customerName: "Manoj Baruah",
+      customerPhone: "+91 94350 11223",
+      address: "House 12, By-Lane 2, Lachit Nagar, Guwahati",
+      distance: "3.5 km away",
+      workerId,
+      workerName: worker?.name || "Ramen Das",
+      category: cat,
+      date: new Date(now).toISOString().slice(0, 10),
+      time: "5:00 PM",
+      description: "Installation of heavy-duty 16A power socket and dedicated MCB wiring for split air conditioner.",
+      details: { Appliance: "Split AC (1.5 Ton)", SocketType: "16A Heavy Duty", Location: "Living Room" },
+      paymentMethod: "online",
+      isEmergency: false,
+      status: "requested",
+      serviceCharge: 500,
+      additionalCharges: 0,
+      createdAt: now - 2 * 3600 * 1000,
+    },
+    {
+      id: `demo_wbkg_${workerId}_03`,
+      customerId: "demo_cust_04",
+      customerName: "Bhaskar Barman",
+      customerPhone: "+91 94350 98765",
+      address: "House 18, By-lane 3, Rajgarh Road, Guwahati",
+      distance: "1.8 km away",
+      workerId,
+      workerName: worker?.name || "Ramen Das",
+      category: cat,
+      date: new Date(now).toISOString().slice(0, 10),
+      time: "11:30 AM",
+      description: "Ceiling fan replacement, regulator installation and study room LED concealed wiring check.",
+      details: { Task: "Fan Installation & Regulator", Rooms: "Study Room", PartsProvided: "Fan provided by customer" },
+      paymentMethod: "cash",
+      isEmergency: false,
+      status: "in_progress",
+      serviceCharge: 450,
+      additionalCharges: 120,
+      createdAt: now - 5 * 3600 * 1000,
+    },
+    {
+      id: `demo_wbkg_${workerId}_04`,
+      customerId: "demo_cust_05",
+      customerName: "Pranab Phukan",
+      customerPhone: "+91 98540 55432",
+      address: "Plot 12, VIP Road, Six Mile, Guwahati",
+      distance: "4.2 km away",
+      workerId,
+      workerName: worker?.name || "Ramen Das",
+      category: cat,
+      date: new Date(now + DAY).toISOString().slice(0, 10),
+      time: "10:00 AM",
+      description: "Kitchen exhaust fan socket replacement and inspection of main distribution MCB box.",
+      details: { Task: "Exhaust Socket & MCB Check", Priority: "Scheduled Next Day" },
+      paymentMethod: "online",
+      isEmergency: false,
+      status: "accepted",
+      serviceCharge: 550,
+      additionalCharges: 0,
+      createdAt: now - 10 * 3600 * 1000,
+    },
+    {
+      id: `demo_wbkg_${workerId}_05`,
+      customerId: "demo_cust_01",
+      customerName: "Demo Customer",
+      customerPhone: "+91 98000 00001",
+      address: "Flat 2A, Green View Apartments, Christian Basti, Guwahati",
+      distance: "2.8 km away",
+      workerId,
+      workerName: worker?.name || "Ramen Das",
+      category: cat,
+      date: new Date(now - DAY).toISOString().slice(0, 10),
+      time: "2:00 PM",
+      description: "Complete living room and dining chandelier wiring with two-way switch installation.",
+      details: { Fixture: "Chandelier & 2-Way Switches", HoursWorked: "2.5 Hours", CompletedOn: "Yesterday" },
+      paymentMethod: "online",
+      isEmergency: false,
+      status: "completed",
+      serviceCharge: 850,
+      additionalCharges: 250,
+      createdAt: now - DAY - 2 * 3600 * 1000,
+    },
+    {
+      id: `demo_wbkg_${workerId}_06`,
+      customerId: "demo_cust_06",
+      customerName: "Debojit Kalita",
+      customerPhone: "+91 98642 77123",
+      address: "Bora Service, G.S. Road, Guwahati",
+      distance: "3.0 km away",
+      workerId,
+      workerName: worker?.name || "Ramen Das",
+      category: cat,
+      date: new Date(now - 3 * DAY).toISOString().slice(0, 10),
+      time: "4:00 PM",
+      description: "Inverter backup connection and battery terminal maintenance with heavy cabling.",
+      details: { Equipment: "Pure Sinewave Inverter 1000VA", CableGrade: "6 sq mm", BatteryChecked: "Yes" },
+      paymentMethod: "online",
+      isEmergency: false,
+      status: "completed",
+      serviceCharge: 750,
+      additionalCharges: 180,
+      createdAt: now - 3 * DAY,
+    },
+    {
+      id: `demo_wbkg_${workerId}_07`,
+      customerId: "demo_cust_07",
+      customerName: "Monojit Saikia",
+      customerPhone: "+91 97060 44321",
+      address: "Uzan Bazar, Near Ghat, Guwahati",
+      distance: "5.1 km away",
+      workerId,
+      workerName: worker?.name || "Ramen Das",
+      category: cat,
+      date: new Date(now - 7 * DAY).toISOString().slice(0, 10),
+      time: "1:30 PM",
+      description: "Submersible pump starter switch repair and float sensor replacement.",
+      details: { Machine: "1.5 HP Submersible", StarterReplaced: "Yes", TestingDone: "Water flow verified" },
+      paymentMethod: "cash",
+      isEmergency: true,
+      status: "completed",
+      serviceCharge: 950,
+      additionalCharges: 300,
+      createdAt: now - 7 * DAY,
+    },
+  ];
+
+  const existingIds = new Set(remaining.map((b) => b.id));
+  demoJobs.forEach((job) => {
+    if (!existingIds.has(job.id)) {
+      remaining.push(job);
+    }
+  });
+
+  saveBookings(remaining);
+
+  const payments = getPayments();
+  const paymentBookingIds = new Set(payments.map((p) => p.bookingId));
+  demoJobs
+    .filter((b) => b.status === "completed")
+    .forEach((b) => {
+      if (!paymentBookingIds.has(b.id)) {
+        payments.push({
+          id: `pay_${b.id}`,
+          bookingId: b.id,
+          amount: Math.round((b.serviceCharge + (b.additionalCharges || 0)) * 1.08),
+          method: b.paymentMethod || "online",
+          status: "success",
+          transactionId: b.paymentMethod === "cash" ? "CASH_COLLECTED" : `TXN_${b.createdAt}`,
+          createdAt: b.createdAt,
+        });
+      }
+      generateInvoice(b.id);
+    });
+  write(KEYS.PAYMENTS, payments);
 }
 
 export function resetDemoData() {
